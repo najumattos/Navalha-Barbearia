@@ -12,22 +12,56 @@ namespace Navalha_Barbearia.Controllers
         private readonly IBarbeiroService _barbeiroService;
         private readonly IClienteService _clienteService;
         private readonly IProcedimentoService _procedimentoService;
+        private readonly IUsuarioContextoService _usuarioContextoService;
 
         public AgendamentosController(
             IAgendamentoService agendamentoService,
             IBarbeiroService barbeiroService,
             IClienteService clienteService,
-            IProcedimentoService procedimentoService)
+            IProcedimentoService procedimentoService,
+            IUsuarioContextoService usuarioContextoService)
         {
             _agendamentoService = agendamentoService;
             _barbeiroService = barbeiroService;
             _clienteService = clienteService;
             _procedimentoService = procedimentoService;
+            _usuarioContextoService = usuarioContextoService;
         }
 
         public IActionResult Index()
         {
-            return View(ObterViewModel(new AgendamentoModel()));
+            // Regra de leitura por perfil: a mesma pagina Index muda apenas a fonte dos dados.
+            // SRP: a action orquestra e delega regra de consulta para os services.
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso == TipoAcessoEnum.Administrador)
+            {
+                return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
+            }
+
+            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterPorBarbeiroId(idBarbeiro.Value, TipoAcessoEnum.Funcionario)));
+            }
+
+            if (tipoAcesso == TipoAcessoEnum.Cliente)
+            {
+                var idCliente = _usuarioContextoService.ObterIdCliente();
+                if (!idCliente.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                var cliente = _clienteService.ObterPerfilCliente(idCliente.Value, TipoAcessoEnum.Cliente);
+                return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)));
+            }
+
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult Details(int id)
@@ -38,7 +72,7 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Create()
         {
-            return View(ObterViewModel(new AgendamentoModel()));
+            return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
         }
 
         [HttpPost]
@@ -47,7 +81,7 @@ namespace Navalha_Barbearia.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(ObterViewModel(viewModel.Agendamento));
+                return View(ObterViewModel(viewModel.Agendamento, _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
             }
 
             _agendamentoService.Criar(viewModel.Agendamento);
@@ -57,7 +91,7 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Edit(int id)
         {
             var agendamento = _agendamentoService.ObterPorId(id, 0, TipoAcessoEnum.Administrador);
-            return agendamento is null ? NotFound() : View(ObterViewModel(agendamento));
+            return agendamento is null ? NotFound() : View(ObterViewModel(agendamento, _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
         }
 
         [HttpPost]
@@ -66,7 +100,7 @@ namespace Navalha_Barbearia.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(ObterViewModel(viewModel.Agendamento));
+                return View(ObterViewModel(viewModel.Agendamento, _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
             }
 
             _agendamentoService.AtualizarDoFuncionario(id, viewModel.Agendamento.Barbeiro.Id, viewModel.Agendamento, TipoAcessoEnum.Funcionario);
@@ -76,7 +110,7 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Delete(int id)
         {
             var agendamento = _agendamentoService.ObterPorId(id, 0, TipoAcessoEnum.Administrador);
-            return agendamento is null ? NotFound() : View(ObterViewModel(agendamento));
+            return agendamento is null ? NotFound() : View(ObterViewModel(agendamento, _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
         }
 
         [HttpPost, ActionName("Delete")]
@@ -87,7 +121,7 @@ namespace Navalha_Barbearia.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private AgendamentoCrudViewModel ObterViewModel(AgendamentoModel agendamento)
+        private AgendamentoCrudViewModel ObterViewModel(AgendamentoModel agendamento, List<AgendamentoModel> agendamentos)
         {
             var barbeiros = _barbeiroService.ObterTodos();
             var clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador);
@@ -96,7 +130,7 @@ namespace Navalha_Barbearia.Controllers
             return new AgendamentoCrudViewModel
             {
                 Agendamento = agendamento,
-                Agendamentos = _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador),
+                Agendamentos = agendamentos,
                 Barbeiros = barbeiros,
                 Clientes = clientes,
                 Procedimentos = procedimentos,

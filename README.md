@@ -15,6 +15,35 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
 - Comentarios adicionados em pontos chave para explicar intencao, responsabilidade e boas praticas para uma desenvolvedora junior.
 - Paginas institucionais e de erro simplificadas para nao competir com as telas principais.
 
+## Atualizacao recente (Layouts separados e navegacao por perfil)
+
+- Separacao de layouts em duas estruturas de apresentacao:
+  - Layout deslogado: [Views/Shared/_LayoutPublic.cshtml](Views/Shared/_LayoutPublic.cshtml)
+  - Layout logado: [Views/Shared/_LayoutLogged.cshtml](Views/Shared/_LayoutLogged.cshtml)
+- Definicao automatica de layout por rota em [Views/_ViewStart.cshtml](Views/_ViewStart.cshtml):
+  - Publico: `Home/Index`, `Home/Privacy`, `Auth/Login`
+  - Logado: demais telas
+- Home deslogada mantida com os elementos solicitados:
+  - mensagem de boas-vindas
+  - formulario de agendamento rapido
+  - botoes para Login e Privacy em [Views/Home/Index.cshtml](Views/Home/Index.cshtml)
+- Menu de navegacao por `TipoAcessoEnum` no layout logado:
+  - Administrador: todos barbeiros, todos clientes, todos agendamentos e procedimentos
+  - Funcionario: meus clientes, meus agendamentos e meus procedimentos
+  - Cliente: meus agendamentos
+- O menu logado leva para paginas Index referentes e os controllers filtram por perfil:
+  - `ClientesController.Index`: administrador ve todos, funcionario ve apenas os proprios clientes.
+  - `AgendamentosController.Index`: administrador ve todos, funcionario ve apenas os proprios, cliente ve apenas os proprios por CPF.
+  - `ProcedimentosController.Index`: administrador ve catalogo completo, funcionario ve apenas os procedimentos vinculados a ele.
+- Adicionado contexto de usuario logado com sessao (SRP + DIP):
+  - Interface: [Services/Interfaces/IUsuarioContextoService.cs](Services/Interfaces/IUsuarioContextoService.cs)
+  - Implementacao: [Services/UsuarioContextoService.cs](Services/UsuarioContextoService.cs)
+  - Registro no DI e sessao em [Program.cs](Program.cs)
+- `AuthController` atualizado para gravar/limpar contexto de login na sessao e suportar logout:
+  - [Controllers/AuthController.cs](Controllers/AuthController.cs)
+- `HomeController` atualizado com fallback de ids por sessao para navegacao logada limpa:
+  - [Controllers/HomeController.cs](Controllers/HomeController.cs)
+
 ## Atualizacao recente (Agendamento e home)
 
 - Adicionado o dominio de agendamento com model, enum e camadas separadas:
@@ -25,7 +54,7 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
   - [Repositories/AgendamentoRepository.cs](Repositories/AgendamentoRepository.cs)
   - [Services/Interfaces/IAgendamentoService.cs](Services/Interfaces/IAgendamentoService.cs)
   - [Services/AgendamentoService.cs](Services/AgendamentoService.cs)
-  - [Controllers/AgendamentoController.cs](Controllers/AgendamentoController.cs)
+  - [Controllers/AgendamentosController.cs](Controllers/AgendamentosController.cs)
 - O campo de barbeiro no agendamento passou a ser uma relacao direta com `BarbeiroModel`, reduzindo texto solto e melhorando a integridade do dado.
 - O cliente nao visualiza mais o status inicial na tela de agendamento.
 - O campo de preco da Home agora e preenchido automaticamente pelo `PrecoPorBarbeiro` de acordo com barbeiro + procedimento selecionados.
@@ -126,38 +155,9 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
 - As views foram conferidas para manter os bindings alinhados com os models atuais.
 - A navegacao principal agora aponta para as novas telas de CRUD das entidades.
 
-## Endpoints principais
-
-### Procedimentos
-
-- `GET /api/Procedimento`
-- `GET /api/Procedimento/{procedimentoEnum}`
-- `PUT /api/Procedimento/{procedimentoEnum}?tipoAcessoSolicitante=Administrador`
-
-### Barbeiros
-
-- `GET /api/Barbeiro`
-- `GET /api/Barbeiro/{id}`
-- `POST /api/Barbeiro`
-- `POST /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}?tipoAcessoSolicitante=Funcionario`
-- `DELETE /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}/preco?precoPorBarbeiro=50&tipoAcessoSolicitante=Funcionario`
-
-### Clientes
-
-- `GET /api/Cliente/administrador?tipoAcessoSolicitante=Administrador`
-- `GET /api/Cliente/barbeiro/{barbeiroId}?tipoAcessoSolicitante=Funcionario`
-- `GET /api/Cliente/por-cpf?cpf=...`
-- `POST /api/Cliente/barbeiro/{barbeiroId}?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Cliente/barbeiro/{barbeiroId}/{clienteId}?tipoAcessoSolicitante=Funcionario`
-- `PATCH /api/Cliente/barbeiro/{barbeiroId}/{clienteId}/desativar?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Cliente/administrador/{clienteId}?tipoAcessoSolicitante=Administrador`
-- `PATCH /api/Cliente/administrador/{clienteId}/desativar?tipoAcessoSolicitante=Administrador`
-- `DELETE /api/Cliente/administrador/{clienteId}?tipoAcessoSolicitante=Administrador`
-
 ## Observacao importante
 
-Ainda nao existe autenticao/autorizacao real integrada no projeto. Por isso, os endpoints que precisam de regra de acesso recebem `tipoAcessoSolicitante` como parametro para simular a validacao ate a integracao com Identity/JWT.
+Ainda nao existe autenticacao/autorizacao real integrada no projeto. A validacao de acesso continua simulada na camada de service e no fluxo de login em memoria, ate a integracao com Identity/JWT.
 
 ## Credenciais de exemplo para desenvolvimento
 
@@ -173,12 +173,3 @@ Ainda nao existe autenticao/autorizacao real integrada no projeto. Por isso, os 
 - [Views/Home/HomeAdministrador.cshtml](Views/Home/HomeAdministrador.cshtml) lista os barbeiros.
 - [Views/Home/HomeFuncionario.cshtml](Views/Home/HomeFuncionario.cshtml) lista os procedimentos do funcionario logado.
 - [Views/Home/HomeCliente.cshtml](Views/Home/HomeCliente.cshtml) mostra dados cadastrais do cliente e seus agendamentos.
-
-## Endpoints de agendamento atualizados
-
-- `GET /api/Agendamento/administrador?tipoAcessoSolicitante=Administrador` retorna todos os agendamentos.
-- `GET /api/Agendamento/funcionario/{barbeiroId}?tipoAcessoSolicitante=Funcionario` retorna os agendamentos do barbeiro logado.
-- `GET /api/Agendamento/cliente?cpf=...&tipoAcessoSolicitante=Cliente` retorna os agendamentos do cliente logado.
-- `GET /api/Agendamento/{idAgendamento}?barbeiroIdSolicitante=...&tipoAcessoSolicitante=...` retorna um agendamento respeitando a regra de acesso.
-- `PUT /api/Agendamento/funcionario/{idAgendamento}?barbeiroIdSolicitante=...` atualiza um agendamento vinculado ao barbeiro logado.
-- `PUT /api/Agendamento/cliente/{idAgendamento}/status?cpfClienteSolicitante=...&status=...` atualiza apenas o status de agendamento do cliente.

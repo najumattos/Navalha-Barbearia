@@ -14,19 +14,22 @@ namespace Navalha_Barbearia.Controllers
         private readonly IClienteService _clienteService;
         private readonly IAgendamentoService _agendamentoService;
         private readonly ILoginService _loginService;
+        private readonly IUsuarioContextoService _usuarioContextoService;
 
         public HomeController(
             ILogger<HomeController> logger,
             IBarbeiroService barbeiroService,
             IClienteService clienteService,
             IAgendamentoService agendamentoService,
-            ILoginService loginService)
+            ILoginService loginService,
+            IUsuarioContextoService usuarioContextoService)
         {
             _logger = logger;
             _barbeiroService = barbeiroService;
             _clienteService = clienteService;
             _agendamentoService = agendamentoService;
             _loginService = loginService;
+            _usuarioContextoService = usuarioContextoService;
         }
 
         public IActionResult Index()
@@ -73,9 +76,16 @@ namespace Navalha_Barbearia.Controllers
         }
 
         [HttpGet]
-        public IActionResult HomeAdministrador(int idBarbeiro)
+        public IActionResult HomeAdministrador(int? idBarbeiro)
         {
-            var login = _loginService.ObterPorBarbeiroId(idBarbeiro);
+            // Clean Code: fallback explicito para sessao evita duplicacao de links com query string.
+            var idBarbeiroResolvido = idBarbeiro ?? _usuarioContextoService.ObterIdBarbeiro();
+            if (!idBarbeiroResolvido.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var login = _loginService.ObterPorBarbeiroId(idBarbeiroResolvido.Value);
             if (login?.TipoAcessoEnum != TipoAcessoEnum.Administrador)
             {
                 return Forbid();
@@ -95,15 +105,21 @@ namespace Navalha_Barbearia.Controllers
         }
 
         [HttpGet]
-        public IActionResult HomeFuncionario(int idBarbeiro)
+        public IActionResult HomeFuncionario(int? idBarbeiro)
         {
-            var login = _loginService.ObterPorBarbeiroId(idBarbeiro);
+            var idBarbeiroResolvido = idBarbeiro ?? _usuarioContextoService.ObterIdBarbeiro();
+            if (!idBarbeiroResolvido.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var login = _loginService.ObterPorBarbeiroId(idBarbeiroResolvido.Value);
             if (login?.TipoAcessoEnum != TipoAcessoEnum.Funcionario)
             {
                 return Forbid();
             }
 
-            var funcionario = _barbeiroService.ObterPorId(idBarbeiro);
+            var funcionario = _barbeiroService.ObterPorId(idBarbeiroResolvido.Value);
             if (funcionario is null)
             {
                 return NotFound();
@@ -114,23 +130,29 @@ namespace Navalha_Barbearia.Controllers
                 IdBarbeiro = funcionario.Id,
                 NomeFuncionario = funcionario.NomeCompleto,
                 Procedimentos = funcionario.Procedimentos,
-                Agendamentos = _agendamentoService.ObterPorBarbeiroId(idBarbeiro, TipoAcessoEnum.Funcionario),
-                Clientes = _clienteService.ObterPorBarbeiro(idBarbeiro, TipoAcessoEnum.Funcionario)
+                Agendamentos = _agendamentoService.ObterPorBarbeiroId(idBarbeiroResolvido.Value, TipoAcessoEnum.Funcionario),
+                Clientes = _clienteService.ObterPorBarbeiro(idBarbeiroResolvido.Value, TipoAcessoEnum.Funcionario)
             };
 
             return View(vm);
         }
 
         [HttpGet]
-        public IActionResult HomeCliente(int idCliente)
+        public IActionResult HomeCliente(int? idCliente)
         {
-            var login = _loginService.ObterPorClienteId(idCliente);
+            var idClienteResolvido = idCliente ?? _usuarioContextoService.ObterIdCliente();
+            if (!idClienteResolvido.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var login = _loginService.ObterPorClienteId(idClienteResolvido.Value);
             if (login?.TipoAcessoEnum != TipoAcessoEnum.Cliente)
             {
                 return Forbid();
             }
 
-            var cliente = _clienteService.ObterPerfilCliente(idCliente, TipoAcessoEnum.Cliente);
+            var cliente = _clienteService.ObterPerfilCliente(idClienteResolvido.Value, TipoAcessoEnum.Cliente);
             var agendamentos = _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente);
 
             return View(new HomeClienteViewModel

@@ -10,15 +10,35 @@ namespace Navalha_Barbearia.Controllers
     {
         private readonly IClienteService _clienteService;
         private readonly IBarbeiroService _barbeiroService;
+        private readonly IUsuarioContextoService _usuarioContextoService;
 
-        public ClientesController(IClienteService clienteService, IBarbeiroService barbeiroService)
+        public ClientesController(IClienteService clienteService, IBarbeiroService barbeiroService, IUsuarioContextoService usuarioContextoService)
         {
             _clienteService = clienteService;
             _barbeiroService = barbeiroService;
+            _usuarioContextoService = usuarioContextoService;
         }
 
         public IActionResult Index()
         {
+            // O mesmo endpoint Index atende perfis diferentes sem duplicar controller (DRY).
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+
+            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                return View(new ClienteCrudViewModel
+                {
+                    Clientes = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario),
+                    Barbeiros = _barbeiroService.ObterTodos().Where(x => x.Id == idBarbeiro.Value).ToList()
+                });
+            }
+
             return View(new ClienteCrudViewModel
             {
                 Clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador),

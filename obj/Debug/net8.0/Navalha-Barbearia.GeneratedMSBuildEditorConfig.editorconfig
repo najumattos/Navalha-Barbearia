@@ -1,5 +1,7 @@
 is_global = true
 build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
@@ -9,121 +11,145 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Navalha_Barbearia
 build_property.RootNamespace = Navalha_Barbearia
-build_property.ProjectDir = C:\Users\Barreto\source\repos\Navalha-Barbearia\
+build_property.ProjectDir = /workspaces/Navalha-Barbearia/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\Barreto\source\repos\Navalha-Barbearia
+build_property.MSBuildProjectDirectory = /workspaces/Navalha-Barbearia
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Agendamentos/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWdlbmRhbWVudG9zXENyZWF0ZS5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Agendamentos/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWdlbmRhbWVudG9zL0NyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Agendamentos/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWdlbmRhbWVudG9zXERlbGV0ZS5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Agendamentos/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWdlbmRhbWVudG9zL0RlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Agendamentos/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWdlbmRhbWVudG9zXEVkaXQuY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Agendamentos/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWdlbmRhbWVudG9zL0RldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Agendamentos/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWdlbmRhbWVudG9zXEluZGV4LmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Agendamentos/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWdlbmRhbWVudG9zL0VkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Auth/Login.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Agendamentos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQWdlbmRhbWVudG9zL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Barbeiros/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFyYmVpcm9zXENyZWF0ZS5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Auth/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9Mb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Barbeiros/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFyYmVpcm9zXERlbGV0ZS5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Barbeiros/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmFyYmVpcm9zL0NyZWF0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Barbeiros/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFyYmVpcm9zXEVkaXQuY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Barbeiros/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmFyYmVpcm9zL0RlbGV0ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Barbeiros/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmFyYmVpcm9zXEluZGV4LmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Barbeiros/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmFyYmVpcm9zL0RldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Clientes/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcQ3JlYXRlLmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Barbeiros/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmFyYmVpcm9zL0VkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Clientes/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcRGVsZXRlLmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Barbeiros/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmFyYmVpcm9zL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Clientes/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcRWRpdC5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Clientes/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Clientes/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2xpZW50ZXNcSW5kZXguY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Clientes/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvRGVsZXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Home/HomeAdministrador.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxIb21lQWRtaW5pc3RyYWRvci5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Clientes/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Home/HomeCliente.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxIb21lQ2xpZW50ZS5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Clientes/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Home/HomeFuncionario.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxIb21lRnVuY2lvbmFyaW8uY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Clientes/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Home/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Home/HomeAdministrador.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ib21lQWRtaW5pc3RyYWRvci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Home/Privacy.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Home/HomeCliente.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ib21lQ2xpZW50ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Procedimentos/Create.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY2VkaW1lbnRvc1xDcmVhdGUuY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Home/HomeFuncionario.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ib21lRnVuY2lvbmFyaW8uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Procedimentos/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY2VkaW1lbnRvc1xEZWxldGUuY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Procedimentos/Edit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY2VkaW1lbnRvc1xFZGl0LmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Procedimentos/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvY2VkaW1lbnRvc1xJbmRleC5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Procedimentos/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Shared/Error.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Procedimentos/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9EZWxldGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Shared/_ValidationScriptsPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+[/workspaces/Navalha-Barbearia/Views/Procedimentos/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9EZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/_ViewImports.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+[/workspaces/Navalha-Barbearia/Views/Procedimentos/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9FZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/_ViewStart.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+[/workspaces/Navalha-Barbearia/Views/Procedimentos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9JbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Barreto/source/repos/Navalha-Barbearia/Views/Shared/_Layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-mb6fnv7buw
+[/workspaces/Navalha-Barbearia/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL0Vycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/Shared/_LayoutLogged.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXRMb2dnZWQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/Shared/_LayoutPublic.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXRQdWJsaWMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/workspaces/Navalha-Barbearia/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-xk9g7luj4f

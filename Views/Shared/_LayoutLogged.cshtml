@@ -1,0 +1,114 @@
+@using Navalha_Barbearia.Enums
+@using Navalha_Barbearia.Services.Interfaces
+@inject IUsuarioContextoService UsuarioContexto
+
+@{
+    var tipoAcesso = UsuarioContexto.ObterTipoAcesso();
+    var controllerAtual = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Navalha Barbearia</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Navalha_Barbearia.styles.css" asp-append-version="true" />
+</head>
+<body class="logged-layout">
+    <div class="container-fluid">
+        <div class="row g-0 min-vh-100">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block collapse custom-sidebar">
+                <div class="d-flex flex-column h-100">
+                    <div class="sidebar-brand-block">
+                        <a class="sidebar-brand" asp-controller="Home" asp-action="Index">Navalha Barbearia</a>
+                        <span class="sidebar-caption">Painel logado</span>
+                    </div>
+
+                    <div class="sidebar-nav flex-grow-1">
+                        <ul class="nav flex-column gap-2">
+                            @if (tipoAcesso == TipoAcessoEnum.Administrador)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Barbeiros" ? "active" : string.Empty)" asp-controller="Barbeiros" asp-action="Index">
+                                        <i class="bi bi-scissors me-2"></i>Barbeiros
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Clientes" ? "active" : string.Empty)" asp-controller="Clientes" asp-action="Index">
+                                        <i class="bi bi-people me-2"></i>Clientes
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Agendamentos" ? "active" : string.Empty)" asp-controller="Agendamentos" asp-action="Index">
+                                        <i class="bi bi-calendar-check me-2"></i>Agendamentos
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Procedimentos" ? "active" : string.Empty)" asp-controller="Procedimentos" asp-action="Index">
+                                        <i class="bi bi-journal-text me-2"></i>Procedimentos
+                                    </a>
+                                </li>
+                            }
+                            else if (tipoAcesso == TipoAcessoEnum.Funcionario)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Clientes" ? "active" : string.Empty)" asp-controller="Clientes" asp-action="Index">
+                                        <i class="bi bi-people me-2"></i>Meus Clientes
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Agendamentos" ? "active" : string.Empty)" asp-controller="Agendamentos" asp-action="Index">
+                                        <i class="bi bi-calendar-check me-2"></i>Meus Agendamentos
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Procedimentos" ? "active" : string.Empty)" asp-controller="Procedimentos" asp-action="Index">
+                                        <i class="bi bi-journal-text me-2"></i>Meus Procedimentos
+                                    </a>
+                                </li>
+                            }
+                            else if (tipoAcesso == TipoAcessoEnum.Cliente)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Agendamentos" ? "active" : string.Empty)" asp-controller="Agendamentos" asp-action="Index">
+                                        <i class="bi bi-calendar-check me-2"></i>Meus Agendamentos
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-footer">
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-grid">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-light btn-sm">Sair</button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4 custom-main-content">
+                <div class="logged-mobile-bar d-md-none">
+                    <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Alternar menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <a class="logged-mobile-brand" asp-controller="Home" asp-action="Index">Navalha Barbearia</a>
+                </div>
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

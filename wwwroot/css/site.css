@@ -20,6 +20,13 @@ body {
   color: #1f1a17;
 }
 
+body.logged-layout {
+  margin-bottom: 0;
+  background:
+    radial-gradient(circle at top left, rgba(163, 126, 92, 0.12), transparent 24%),
+    linear-gradient(180deg, #f6f1ea 0%, #f3ede6 100%);
+}
+
 .site-header {
   background: rgba(247, 244, 239, 0.85);
   backdrop-filter: blur(12px);
@@ -28,6 +35,175 @@ body {
 
 .app-main {
   padding-top: 1.5rem;
+}
+
+.custom-sidebar {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #181310 0%, #231c18 100%);
+  color: #f6efe7;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 42px rgba(31, 26, 23, 0.18);
+  padding: 1.5rem 1rem;
+}
+
+.sidebar-brand-block {
+  padding: 0 0.5rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.25rem;
+}
+
+.sidebar-brand {
+  display: inline-block;
+  color: #fff8f0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-brand:hover {
+  color: #ffffff;
+}
+
+.sidebar-caption {
+  display: block;
+  margin-top: 0.35rem;
+  color: rgba(246, 239, 231, 0.68);
+  font-size: 0.82rem;
+}
+
+.sidebar-nav {
+  padding: 0 0.25rem;
+}
+
+.custom-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  color: rgba(246, 239, 231, 0.84);
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.custom-sidebar .nav-link:hover,
+.custom-sidebar .nav-link:focus {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.custom-sidebar .nav-link.active {
+  color: #171311;
+  background: linear-gradient(135deg, #f4d7b1 0%, #e6b47c 100%);
+  box-shadow: 0 10px 24px rgba(230, 180, 124, 0.18);
+}
+
+.custom-sidebar .nav-link i {
+  font-size: 1rem;
+}
+
+.sidebar-footer {
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-footer .btn-light {
+  background: #fff3e3;
+  border-color: #fff3e3;
+  color: #1f1a17;
+  font-weight: 600;
+}
+
+.custom-main-content {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+.custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 {
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 240, 230, 0.96) 100%);
+  border: 1px solid rgba(31, 26, 23, 0.08);
+  border-radius: 1.2rem;
+  box-shadow: 0 14px 34px rgba(31, 26, 23, 0.06);
+}
+
+.custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 .h3 {
+  letter-spacing: -0.02em;
+}
+
+.custom-main-content .container.py-4 > .card-soft {
+  overflow: hidden;
+}
+
+.custom-main-content .table-responsive {
+  overflow: hidden;
+}
+
+.custom-main-content .table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.custom-main-content .table tbody tr:hover {
+  background-color: rgba(143, 108, 76, 0.05);
+}
+
+.custom-main-content .table td,
+.custom-main-content .table th {
+  vertical-align: middle;
+}
+
+.custom-main-content .btn-outline-dark.btn-sm {
+  border-radius: 999px;
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+.custom-main-content .btn-dark.btn-sm,
+.custom-main-content .btn-danger.btn-sm,
+.custom-main-content .btn-outline-dark.btn-sm {
+  box-shadow: none;
+}
+
+.custom-main-content .card-soft .btn,
+.custom-main-content .container.py-4 .btn {
+  border-radius: 999px;
+}
+
+.logged-mobile-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+}
+
+.logged-mobile-brand {
+  color: #1f1a17;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.custom-main-content .container {
+  max-width: none;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .custom-sidebar {
+    min-height: auto;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .custom-main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 .hero-shell {

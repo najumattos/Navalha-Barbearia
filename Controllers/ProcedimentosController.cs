@@ -9,14 +9,39 @@ namespace Navalha_Barbearia.Controllers
     public class ProcedimentosController : Controller
     {
         private readonly IProcedimentoService _procedimentoService;
+        private readonly IBarbeiroService _barbeiroService;
+        private readonly IUsuarioContextoService _usuarioContextoService;
 
-        public ProcedimentosController(IProcedimentoService procedimentoService)
+        public ProcedimentosController(IProcedimentoService procedimentoService, IBarbeiroService barbeiroService, IUsuarioContextoService usuarioContextoService)
         {
             _procedimentoService = procedimentoService;
+            _barbeiroService = barbeiroService;
+            _usuarioContextoService = usuarioContextoService;
         }
 
         public IActionResult Index()
         {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                var barbeiro = _barbeiroService.ObterPorId(idBarbeiro.Value);
+                if (barbeiro is null)
+                {
+                    return NotFound();
+                }
+
+                return View(new ProcedimentoCrudViewModel
+                {
+                    Procedimentos = barbeiro.Procedimentos
+                });
+            }
+
             return View(new ProcedimentoCrudViewModel
             {
                 Procedimentos = _procedimentoService.ObterTodos()

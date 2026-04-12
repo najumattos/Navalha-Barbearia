@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = "Navalha Barbearia";
+    // Layout explicito para reduzir ambiguidade e facilitar manutencao por quem esta iniciando.
+    Layout = "_LayoutPublic";
 }
 
 <div class="hero-shell py-5">
@@ -16,7 +18,10 @@
                         Um ponto de encontro para cortes, barba e cuidados pessoais com atendimento claro e organizado.
                     </p>
 
-                    <a class="btn btn-dark btn-lg px-4" asp-controller="Auth" asp-action="Login">Login dos barbeiros</a>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-dark btn-lg px-4" asp-controller="Auth" asp-action="Login">Ir para Login</a>
+                        <a class="btn btn-outline-dark btn-lg px-4" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </div>
                 </div>
             </div>
 

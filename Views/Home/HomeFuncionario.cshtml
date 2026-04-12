@@ -2,13 +2,14 @@
 
 @{
     ViewData["Title"] = "Home Funcionario";
+    Layout = "_LayoutLogged";
 }
 
 <div class="container py-4">
     <h1 class="h3 mb-2">Painel do Funcionario</h1>
     <p class="text-muted mb-4">Profissional: @Model.NomeFuncionario</p>
 
-    <div class="card border-0 shadow-sm">
+    <div id="meus-procedimentos" class="card border-0 shadow-sm">
         <div class="card-header bg-white fw-semibold">Procedimentos realizados</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -35,7 +36,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mt-4">
+    <div id="meus-agendamentos" class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white fw-semibold">Meus agendamentos</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -104,7 +105,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mt-4">
+    <div id="meus-clientes" class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white fw-semibold">Clientes cadastrados por mim</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">

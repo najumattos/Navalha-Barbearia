@@ -1,0 +1,42 @@
+@model Navalha_Barbearia.Models.ClienteModel
+
+@{
+    ViewData["Title"] = "Detalhes do cliente";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 860px;">
+        <span class="eyebrow">Detalhes</span>
+        <h1 class="h3 mt-3 mb-3">Detalhes do cliente</h1>
+        <p class="text-muted">Dados completos de cadastro do cliente.</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Id</dt>
+            <dd class="col-sm-8">@Model.Id</dd>
+            <dt class="col-sm-4">Nome</dt>
+            <dd class="col-sm-8">@Model.NomeCompleto</dd>
+            <dt class="col-sm-4">CPF</dt>
+            <dd class="col-sm-8">@Model.CPF</dd>
+            <dt class="col-sm-4">Telefone</dt>
+            <dd class="col-sm-8">@Model.Telefone</dd>
+            <dt class="col-sm-4">Genero</dt>
+            <dd class="col-sm-8">@Model.GeneroEnum</dd>
+            <dt class="col-sm-4">Endereco</dt>
+            <dd class="col-sm-8">@Model.Endereco</dd>
+            <dt class="col-sm-4">Nascimento</dt>
+            <dd class="col-sm-8">@Model.DataNascimento.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-4">Cadastro</dt>
+            <dd class="col-sm-8">@Model.DataCadastro.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-4">Ativo</dt>
+            <dd class="col-sm-8">@(Model.Ativo ? "Sim" : "Nao")</dd>
+            <dt class="col-sm-4">Barbeiro responsavel</dt>
+            <dd class="col-sm-8">@Model.BarbeiroQueCadastrou.NomeCompleto</dd>
+        </dl>
+
+        <div class="d-flex gap-2 pt-4">
+            <a class="btn btn-dark" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+            <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Excluir</a>
+            <a class="btn btn-outline-dark" asp-action="Index">Voltar</a>
+        </div>
+    </div>
+</div>
