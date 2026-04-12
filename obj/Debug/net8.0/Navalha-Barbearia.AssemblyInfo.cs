@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e32e7e6518aa09af29125010696c5600a499c1ec")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+15d9fb5df54ccf58eeeb64f49c2d4e02aaa7b506")]
 [assembly: System.Reflection.AssemblyProductAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

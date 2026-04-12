@@ -56,6 +56,12 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Create()
         {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
             return View(new ProcedimentoModel());
         }
 
@@ -63,6 +69,12 @@ namespace Navalha_Barbearia.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ProcedimentoModel procedimento)
         {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(procedimento);
@@ -72,27 +84,75 @@ namespace Navalha_Barbearia.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Edit(ProcedimentoEnum procedimentoEnum)
+        public IActionResult Edit(ProcedimentoEnum? procedimentoEnum)
         {
-            var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
+            // Mantemos um unico ponto de preparacao da tela para seguir DRY e facilitar manutencao.
+            var procedimentoSelecionado = procedimentoEnum ?? _procedimentoService.ObterTodos().Select(x => x.ProcedimentoEnum).FirstOrDefault();
+            var procedimento = _procedimentoService.ObterPorTipo(procedimentoSelecionado);
+
+            ViewBag.TiposProcedimento = Enum.GetValues<ProcedimentoEnum>();
             return procedimento is null ? NotFound() : View(procedimento);
+        }
+
+        [HttpGet]
+        public IActionResult BuscarPorTipo(ProcedimentoEnum procedimentoEnum)
+        {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
+            var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
+            if (procedimento is null)
+            {
+                return Json(new { encontrado = false });
+            }
+
+            // Endpoint de leitura simples para auto preenchimento na UI, sem duplicar regra de negocio.
+            return Json(new
+            {
+                encontrado = true,
+                procedimentoEnum = (int)procedimento.ProcedimentoEnum,
+                descricao = procedimento.Descricao,
+                precoBase = procedimento.PrecoBase
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ProcedimentoEnum procedimentoEnum, ProcedimentoModel procedimento)
+        public IActionResult Edit(ProcedimentoModel procedimento)
         {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
             if (!ModelState.IsValid)
             {
+                ViewBag.TiposProcedimento = Enum.GetValues<ProcedimentoEnum>();
                 return View(procedimento);
             }
 
-            _procedimentoService.AtualizarCatalogo(procedimentoEnum, procedimento, TipoAcessoEnum.Administrador);
+            _procedimentoService.AtualizarCatalogo(procedimento.ProcedimentoEnum, procedimento, TipoAcessoEnum.Administrador);
             return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Delete(ProcedimentoEnum procedimentoEnum)
         {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
             var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
             return procedimento is null ? NotFound() : View(procedimento);
         }
@@ -101,8 +161,31 @@ namespace Navalha_Barbearia.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(ProcedimentoEnum procedimentoEnum)
         {
+            var validacaoAdmin = ValidarAcessoAdministrador();
+            if (validacaoAdmin is not null)
+            {
+                return validacaoAdmin;
+            }
+
             _procedimentoService.Excluir(procedimentoEnum, TipoAcessoEnum.Administrador);
             return RedirectToAction(nameof(Index));
+        }
+
+        private IActionResult? ValidarAcessoAdministrador()
+        {
+            // Guard clause: falha cedo quando o usuario nao possui permissao para manter o fluxo simples e legivel.
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value != TipoAcessoEnum.Administrador)
+            {
+                return Forbid();
+            }
+
+            return null;
         }
     }
 }

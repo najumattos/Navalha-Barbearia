@@ -1,31 +1,43 @@
 @model Navalha_Barbearia.Models.ProcedimentoModel
+@using Navalha_Barbearia.Enums
 
 @{
     ViewData["Title"] = "Editar procedimento";
+    var tiposProcedimento = ViewBag.TiposProcedimento as ProcedimentoEnum[] ?? Enum.GetValues<ProcedimentoEnum>();
 }
 
 <div class="container py-4">
     <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
-        <span class="eyebrow">Atualizacao</span>
+        <span class="eyebrow">Atualizacao de catalogo</span>
         <h1 class="h3 mt-3 mb-4">Editar procedimento</h1>
+        <p class="text-muted mb-4">Selecione um tipo para carregar os dados atuais e atualizar descricao e preco base.</p>
 
         <form asp-action="Edit" method="post" class="row g-3">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="ProcedimentoEnum" />
 
             <div class="col-md-6">
-                <label class="form-label">Tipo</label>
-                <input class="form-control" value="@Model.ProcedimentoEnum" readonly />
+                <label asp-for="ProcedimentoEnum" class="form-label">Tipo</label>
+                <select asp-for="ProcedimentoEnum" class="form-select" id="procedimento-select">
+                    @foreach (var tipo in tiposProcedimento)
+                    {
+                        <option value="@((int)tipo)">@tipo</option>
+                    }
+                </select>
+                <small class="text-muted">Boas praticas: fonte unica da verdade no backend e auto preenchimento no frontend para evitar duplicacao.</small>
             </div>
 
             <div class="col-md-6">
                 <label asp-for="PrecoBase" class="form-label"></label>
-                <input asp-for="PrecoBase" type="number" step="0.01" class="form-control" />
+                <input asp-for="PrecoBase" type="number" step="0.01" class="form-control" id="preco-base" />
             </div>
 
             <div class="col-12">
                 <label asp-for="Descricao" class="form-label"></label>
-                <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
+                <textarea asp-for="Descricao" class="form-control" rows="4" id="descricao"></textarea>
+            </div>
+
+            <div class="col-12">
+                <small class="text-muted" id="mensagem-carregamento"></small>
             </div>
 
             <div class="col-12 d-flex gap-2 pt-2">
@@ -35,3 +47,56 @@
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        const procedimentoSelect = document.getElementById("procedimento-select");
+        const descricaoInput = document.getElementById("descricao");
+        const precoBaseInput = document.getElementById("preco-base");
+        const mensagem = document.getElementById("mensagem-carregamento");
+
+        if (!procedimentoSelect || !descricaoInput || !precoBaseInput || !mensagem) {
+            return;
+        }
+
+        // Clean Code: funcao com responsabilidade unica para manter comportamento previsivel.
+        async function carregarDadosDoProcedimento() {
+            const tipoSelecionado = procedimentoSelect.value;
+            if (!tipoSelecionado) {
+                descricaoInput.value = "";
+                precoBaseInput.value = "";
+                mensagem.textContent = "Selecione um tipo para carregar os dados.";
+                return;
+            }
+
+            mensagem.textContent = "Carregando dados do procedimento...";
+
+            try {
+                const resposta = await fetch(`/Procedimentos/BuscarPorTipo?procedimentoEnum=${encodeURIComponent(tipoSelecionado)}`);
+                if (!resposta.ok) {
+                    mensagem.textContent = "Nao foi possivel carregar os dados agora.";
+                    return;
+                }
+
+                const resultado = await resposta.json();
+                if (!resultado.encontrado) {
+                    descricaoInput.value = "";
+                    precoBaseInput.value = "";
+                    mensagem.textContent = "Procedimento nao encontrado no catalogo.";
+                    return;
+                }
+
+                descricaoInput.value = resultado.descricao || "";
+                precoBaseInput.value = Number(resultado.precoBase || 0).toFixed(2);
+                mensagem.textContent = "Dados carregados. Revise e clique em Salvar para aplicar no catalogo.";
+            } catch {
+                mensagem.textContent = "Erro de comunicacao com o servidor. Tente novamente.";
+            }
+        }
+
+        procedimentoSelect.addEventListener("change", carregarDadosDoProcedimento);
+
+        // Carregamento inicial: facilita uso quando a tela abre com um tipo pre-selecionado.
+        carregarDadosDoProcedimento();
+    })();
+</script>
