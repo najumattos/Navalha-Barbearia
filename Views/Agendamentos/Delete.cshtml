@@ -1,0 +1,32 @@
+@model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
+
+@{
+    ViewData["Title"] = "Excluir agendamento";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 860px;">
+        <span class="eyebrow">Remocao</span>
+        <h1 class="h3 mt-3 mb-3 text-danger">Excluir agendamento</h1>
+        <p class="text-muted">Confirme abaixo antes de remover o registro da agenda em memoria.</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Cliente</dt>
+            <dd class="col-sm-8">@Model.Agendamento.Cliente.NomeCompleto</dd>
+            <dt class="col-sm-4">Barbeiro</dt>
+            <dd class="col-sm-8">@Model.Agendamento.Barbeiro.NomeCompleto</dd>
+            <dt class="col-sm-4">Procedimento</dt>
+            <dd class="col-sm-8">@Model.Agendamento.Procedimento</dd>
+            <dt class="col-sm-4">Data</dt>
+            <dd class="col-sm-8">@Model.Agendamento.DataHora.ToString("dd/MM/yyyy HH:mm")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="d-flex gap-2 pt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Agendamento.IdAgendamento" />
+            <input type="hidden" name="barbeiroId" value="@Model.Agendamento.Barbeiro.Id" />
+            <button type="submit" class="btn btn-danger">Excluir</button>
+            <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+        </form>
+    </div>
+</div>

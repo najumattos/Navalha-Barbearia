@@ -1,0 +1,44 @@
+@model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
+
+@{
+    ViewData["Title"] = "Editar agendamento";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 960px;">
+        <span class="eyebrow">Atualizacao</span>
+        <h1 class="h3 mt-3 mb-4">Editar agendamento</h1>
+
+        <form asp-action="Edit" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <input asp-for="Agendamento.IdAgendamento" type="hidden" />
+            <input asp-for="Agendamento.Barbeiro.Id" type="hidden" />
+            <input asp-for="Agendamento.Cliente.Id" type="hidden" />
+            <input asp-for="Agendamento.Cliente.CPF" type="hidden" />
+            <input asp-for="Agendamento.Cliente.NomeCompleto" type="hidden" />
+            <input asp-for="Agendamento.Cliente.Telefone" type="hidden" />
+            <input asp-for="Agendamento.Procedimento" type="hidden" />
+            <input asp-for="Agendamento.Preco" type="hidden" />
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.DataHora" class="form-label">Data e hora</label>
+                <input asp-for="Agendamento.DataHora" type="datetime-local" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.StatusAgendamentoEnum" class="form-label">Status</label>
+                <select asp-for="Agendamento.StatusAgendamentoEnum" class="form-select" asp-items="Html.GetEnumSelectList<StatusAgendamentoEnum>()"></select>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Agendamento.Observacao" class="form-label">Observacao</label>
+                <textarea asp-for="Agendamento.Observacao" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="col-12 pt-2">
+                <button type="submit" class="btn btn-dark">Salvar</button>
+                <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

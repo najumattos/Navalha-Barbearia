@@ -31,7 +31,24 @@ namespace Navalha_Barbearia.Services
         {
             // Codigo limpo: validacao simples e explicita antes de persistir o agregado.
             barbeiro.Procedimentos ??= new List<ProcedimentoModel>();
+            barbeiro.Clientes ??= new List<ClienteModel>();
             return _barbeiroRepository.Adicionar(barbeiro);
+        }
+
+        public BarbeiroModel Atualizar(BarbeiroModel barbeiro)
+        {
+            var barbeiroExistente = ObterBarbeiroObrigatorio(barbeiro.Id);
+
+            // Mantemos as colecoes para nao apagar relacoes ja cadastradas na lista em memoria.
+            barbeiro.Procedimentos = barbeiroExistente.Procedimentos;
+            barbeiro.Clientes = barbeiroExistente.Clientes;
+
+            return _barbeiroRepository.Atualizar(barbeiro);
+        }
+
+        public void Excluir(int id)
+        {
+            _barbeiroRepository.Excluir(id);
         }
 
         public ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante)

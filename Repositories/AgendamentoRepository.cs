@@ -82,5 +82,11 @@ namespace Navalha_Barbearia.Repositories
             _agendamentos[indice] = agendamento;
             return agendamento;
         }
+
+        public void Excluir(int idAgendamento)
+        {
+            var agendamento = ObterPorId(idAgendamento) ?? throw new KeyNotFoundException($"Agendamento {idAgendamento} nao encontrado.");
+            _agendamentos.Remove(agendamento);
+        }
     }
 }

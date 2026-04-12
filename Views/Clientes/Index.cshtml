@@ -1,0 +1,50 @@
+@model Navalha_Barbearia.Models.ViewModels.ClienteCrudViewModel
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">Cadastro</span>
+            <h1 class="h3 mt-2 mb-0">Clientes</h1>
+        </div>
+        <a class="btn btn-dark" asp-action="Create">Novo cliente</a>
+    </div>
+
+    <div class="card-soft p-3 p-md-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nome</th>
+                        <th>Genero</th>
+                        <th>CPF</th>
+                        <th>Barbeiro</th>
+                        <th>Ativo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in Model.Clientes)
+                    {
+                        <tr>
+                            <td>@cliente.Id</td>
+                            <td>@cliente.NomeCompleto</td>
+                            <td>@cliente.GeneroEnum</td>
+                            <td>@cliente.CPF</td>
+                            <td>@cliente.BarbeiroQueCadastrou.NomeCompleto</td>
+                            <td>@(cliente.Ativo ? "Sim" : "Nao")</td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@cliente.Id">Editar</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Delete" asp-route-id="@cliente.Id">Excluir</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

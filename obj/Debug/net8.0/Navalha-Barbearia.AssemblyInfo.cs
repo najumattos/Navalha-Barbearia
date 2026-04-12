@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+837ce015dbee48466270b3e427cd47c43d06514f")]
 [assembly: System.Reflection.AssemblyProductAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Navalha-Barbearia")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

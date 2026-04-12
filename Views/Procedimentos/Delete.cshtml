@@ -1,0 +1,27 @@
+@model Navalha_Barbearia.Models.ProcedimentoModel
+
+@{
+    ViewData["Title"] = "Excluir procedimento";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
+        <span class="eyebrow">Remocao</span>
+        <h1 class="h3 mt-3 mb-3 text-danger">Excluir procedimento</h1>
+        <p class="text-muted">Esta acao remove o item do catalogo usado pela aplicacao.</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Tipo</dt>
+            <dd class="col-sm-8">@Model.ProcedimentoEnum</dd>
+            <dt class="col-sm-4">Descricao</dt>
+            <dd class="col-sm-8">@Model.Descricao</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="d-flex gap-2 pt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ProcedimentoEnum" />
+            <button type="submit" class="btn btn-danger">Excluir</button>
+            <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+        </form>
+    </div>
+</div>

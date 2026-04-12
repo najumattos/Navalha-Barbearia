@@ -7,6 +7,8 @@ namespace Navalha_Barbearia.Services.Interfaces
     {
         List<ProcedimentoModel> ObterTodos();
         ProcedimentoModel? ObterPorTipo(ProcedimentoEnum procedimentoEnum);
+        ProcedimentoModel Criar(ProcedimentoModel procedimento, TipoAcessoEnum tipoAcessoSolicitante);
         ProcedimentoModel AtualizarCatalogo(ProcedimentoEnum procedimentoEnum, ProcedimentoModel procedimentoAtualizado, TipoAcessoEnum tipoAcessoSolicitante);
+        void Excluir(ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante);
     }
 }

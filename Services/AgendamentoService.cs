@@ -165,6 +165,21 @@ namespace Navalha_Barbearia.Services
             return _agendamentoRepository.Atualizar(agendamento);
         }
 
+        public void Excluir(int idAgendamento, int barbeiroIdSolicitante, TipoAcessoEnum tipoAcessoSolicitante)
+        {
+            ValidarFuncionarioOuAdministrador(tipoAcessoSolicitante);
+
+            var agendamento = _agendamentoRepository.ObterPorId(idAgendamento)
+                ?? throw new KeyNotFoundException($"Agendamento {idAgendamento} nao encontrado.");
+
+            if (tipoAcessoSolicitante == TipoAcessoEnum.Funcionario && agendamento.Barbeiro.Id != barbeiroIdSolicitante)
+            {
+                throw new UnauthorizedAccessException("Funcionario pode excluir apenas os proprios agendamentos.");
+            }
+
+            _agendamentoRepository.Excluir(idAgendamento);
+        }
+
         private static void ValidarFuncionarioOuAdministrador(TipoAcessoEnum tipoAcessoSolicitante)
         {
             if (tipoAcessoSolicitante is not (TipoAcessoEnum.Funcionario or TipoAcessoEnum.Administrador))

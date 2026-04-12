@@ -26,6 +26,16 @@ namespace Navalha_Barbearia.Services
             return _procedimentoRepository.ObterPorTipo(procedimentoEnum);
         }
 
+        public ProcedimentoModel Criar(ProcedimentoModel procedimento, TipoAcessoEnum tipoAcessoSolicitante)
+        {
+            if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
+            {
+                throw new UnauthorizedAccessException("Somente Administrador pode criar procedimentos.");
+            }
+
+            return _procedimentoRepository.Adicionar(procedimento);
+        }
+
         public ProcedimentoModel AtualizarCatalogo(ProcedimentoEnum procedimentoEnum, ProcedimentoModel procedimentoAtualizado, TipoAcessoEnum tipoAcessoSolicitante)
         {
             if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
@@ -49,6 +59,21 @@ namespace Navalha_Barbearia.Services
             }
 
             return _procedimentoRepository.Adicionar(procedimentoCatalogo);
+        }
+
+        public void Excluir(ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante)
+        {
+            if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
+            {
+                throw new UnauthorizedAccessException("Somente Administrador pode excluir procedimentos.");
+            }
+
+            _procedimentoRepository.Excluir(procedimentoEnum);
+
+            foreach (var barbeiro in _barbeiroRepository.ObterTodos())
+            {
+                barbeiro.Procedimentos.RemoveAll(x => x.ProcedimentoEnum == procedimentoEnum);
+            }
         }
     }
 }

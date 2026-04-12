@@ -31,3 +31,4 @@ C:\Users\Barreto\source\repos\Navalha-Barbearia\obj\Debug\net8.0\refint\Navalha-
 C:\Users\Barreto\source\repos\Navalha-Barbearia\obj\Debug\net8.0\Navalha-Barbearia.pdb
 C:\Users\Barreto\source\repos\Navalha-Barbearia\obj\Debug\net8.0\Navalha-Barbearia.genruntimeconfig.cache
 C:\Users\Barreto\source\repos\Navalha-Barbearia\obj\Debug\net8.0\ref\Navalha-Barbearia.dll
+C:\Users\Barreto\source\repos\Navalha-Barbearia\obj\Debug\net8.0\Navalha-Barbearia.sourcelink.json

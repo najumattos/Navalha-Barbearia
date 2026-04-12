@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "EtZAtbYT/8SYm5oeFDVdl2WVCjLpUAjLtQLtgS5SnGw=",
+  "Hash": "RJMlK1F6CmffxiOeLSKJtNU/GDB0Zd9/O8yAXSCCeSE=",
   "Source": "Navalha-Barbearia",
   "BasePath": "_content/Navalha-Barbearia",
   "Mode": "Default",
@@ -1343,7 +1343,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sun, 12 Apr 2026 04:52:30 GMT"
+          "Value": "Sun, 12 Apr 2026 05:02:02 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -1380,7 +1380,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sun, 12 Apr 2026 04:52:30 GMT"
+          "Value": "Sun, 12 Apr 2026 05:02:02 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6263,7 +6263,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 11 Apr 2026 23:14:26 GMT"
+          "Value": "Sun, 12 Apr 2026 15:20:20 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6300,7 +6300,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 11 Apr 2026 23:14:26 GMT"
+          "Value": "Sun, 12 Apr 2026 15:20:20 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6345,7 +6345,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 11 Apr 2026 23:14:26 GMT"
+          "Value": "Sun, 12 Apr 2026 15:20:20 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -6390,7 +6390,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 11 Apr 2026 23:14:26 GMT"
+          "Value": "Sun, 12 Apr 2026 15:20:20 GMT"
         },
         {
           "Name": "Cache-Control",

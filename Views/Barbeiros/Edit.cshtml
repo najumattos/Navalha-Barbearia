@@ -1,0 +1,37 @@
+@model Navalha_Barbearia.Models.BarbeiroModel
+
+@{
+    ViewData["Title"] = "Editar barbeiro";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
+        <span class="eyebrow">Atualizacao</span>
+        <h1 class="h3 mt-3 mb-4">Editar barbeiro</h1>
+
+        <form asp-action="Edit" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+
+            <div class="col-md-6">
+                <label asp-for="NomeCompleto" class="form-label"></label>
+                <input asp-for="NomeCompleto" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Telefone" class="form-label"></label>
+                <input asp-for="Telefone" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="TipoAcesso" class="form-label"></label>
+                <select asp-for="TipoAcesso" class="form-select" asp-items="Html.GetEnumSelectList<TipoAcessoEnum>()"></select>
+            </div>
+
+            <div class="col-12 d-flex gap-2 pt-2">
+                <button type="submit" class="btn btn-dark">Salvar</button>
+                <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

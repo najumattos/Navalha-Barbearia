@@ -1,0 +1,44 @@
+@model Navalha_Barbearia.Models.ViewModels.ProcedimentoCrudViewModel
+
+@{
+    ViewData["Title"] = "Procedimentos";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">Catalogo</span>
+            <h1 class="h3 mt-2 mb-0">Procedimentos</h1>
+        </div>
+        <a class="btn btn-dark" asp-action="Create">Novo procedimento</a>
+    </div>
+
+    <div class="card-soft p-3 p-md-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descricao</th>
+                        <th>Preco base</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var procedimento in Model.Procedimentos)
+                    {
+                        <tr>
+                            <td>@procedimento.ProcedimentoEnum</td>
+                            <td>@procedimento.Descricao</td>
+                            <td>@procedimento.PrecoBase.ToString("C")</td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-procedimentoEnum="@procedimento.ProcedimentoEnum">Editar</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Delete" asp-route-procedimentoEnum="@procedimento.ProcedimentoEnum">Excluir</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+@model Navalha_Barbearia.Models.BarbeiroModel
+
+@{
+    ViewData["Title"] = "Excluir barbeiro";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
+        <span class="eyebrow">Remocao</span>
+        <h1 class="h3 mt-3 mb-3 text-danger">Excluir barbeiro</h1>
+        <p class="text-muted">Essa acao remove o barbeiro da lista em memoria desta aplicacao de exemplo.</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Nome</dt>
+            <dd class="col-sm-8">@Model.NomeCompleto</dd>
+            <dt class="col-sm-4">Telefone</dt>
+            <dd class="col-sm-8">@Model.Telefone</dd>
+            <dt class="col-sm-4">Tipo</dt>
+            <dd class="col-sm-8">@Model.TipoAcesso</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="d-flex gap-2 pt-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Excluir</button>
+            <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+        </form>
+    </div>
+</div>

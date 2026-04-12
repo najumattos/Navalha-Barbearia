@@ -12,5 +12,6 @@ namespace Navalha_Barbearia.Services.Interfaces
         AgendamentoModel Criar(AgendamentoModel agendamento);
         AgendamentoModel AtualizarDoFuncionario(int idAgendamento, int barbeiroIdSolicitante, AgendamentoModel agendamento, TipoAcessoEnum tipoAcessoSolicitante);
         AgendamentoModel AtualizarStatusDoCliente(int idAgendamento, string cpfClienteSolicitante, StatusAgendamentoEnum status, TipoAcessoEnum tipoAcessoSolicitante);
+        void Excluir(int idAgendamento, int barbeiroIdSolicitante, TipoAcessoEnum tipoAcessoSolicitante);
     }
 }

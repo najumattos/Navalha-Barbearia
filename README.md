@@ -6,6 +6,11 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
 
 - Normalizacao do genero para o dominio de cliente: `GeneroEnum` pertence a `ClienteModel`.
 - Views principais atualizadas para respeitar a modelagem normalizada e o visual simples.
+- CRUD MVC criado e organizado por entidade:
+  - [Views/Barbeiros/Index.cshtml](Views/Barbeiros/Index.cshtml)
+  - [Views/Clientes/Index.cshtml](Views/Clientes/Index.cshtml)
+  - [Views/Procedimentos/Index.cshtml](Views/Procedimentos/Index.cshtml)
+  - [Views/Agendamentos/Index.cshtml](Views/Agendamentos/Index.cshtml)
 - Layout compartilhado e CSS global refinados para uma aparencia mais limpa e consistente.
 - Comentarios adicionados em pontos chave para explicar intencao, responsabilidade e boas praticas para uma desenvolvedora junior.
 - Paginas institucionais e de erro simplificadas para nao competir com as telas principais.
@@ -97,6 +102,8 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
 - Repositories cuidam da persistencia em memoria e do acesso aos dados.
 - ViewModels entregam somente o necessario para a tela.
 - Views exibem informacao e UX simples; nao carregam regra de negocio.
+- Cada entidade principal ganhou sua pasta de views com `Index`, `Create`, `Edit` e `Delete`.
+- A navegacao do layout foi ajustada para abrir as areas de CRUD diretamente.
 
 ## Boas praticas de Clean Code aplicadas
 
@@ -117,6 +124,7 @@ Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabi
 - O projeto foi validado com `dotnet build -v minimal`.
 - A configuracao de DI em `Program.cs` continua apontando para as interfaces corretas.
 - As views foram conferidas para manter os bindings alinhados com os models atuais.
+- A navegacao principal agora aponta para as novas telas de CRUD das entidades.
 
 ## Endpoints principais
 

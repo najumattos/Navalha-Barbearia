@@ -107,5 +107,26 @@ namespace Navalha_Barbearia.Repositories
             return barbeiro;
         }
 
+        public BarbeiroModel Atualizar(BarbeiroModel barbeiro)
+        {
+            var indice = _barbeiros.FindIndex(x => x.Id == barbeiro.Id);
+            if (indice < 0)
+            {
+                throw new KeyNotFoundException($"Barbeiro {barbeiro.Id} nao encontrado.");
+            }
+
+            _barbeiros[indice].NomeCompleto = barbeiro.NomeCompleto;
+            _barbeiros[indice].Telefone = barbeiro.Telefone;
+            _barbeiros[indice].TipoAcesso = barbeiro.TipoAcesso;
+
+            return _barbeiros[indice];
+        }
+
+        public void Excluir(int id)
+        {
+            var barbeiro = ObterPorId(id) ?? throw new KeyNotFoundException($"Barbeiro {id} nao encontrado.");
+            _barbeiros.Remove(barbeiro);
+        }
+
     }
 }

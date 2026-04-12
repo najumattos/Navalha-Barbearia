@@ -1,0 +1,50 @@
+@model List<Navalha_Barbearia.Models.BarbeiroModel>
+
+@{
+    ViewData["Title"] = "Barbeiros";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">Cadastro</span>
+            <h1 class="h3 mt-2 mb-0">Barbeiros</h1>
+        </div>
+        <a class="btn btn-dark" asp-action="Create">Novo barbeiro</a>
+    </div>
+
+    <div class="card-soft p-3 p-md-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Tipo</th>
+                        <th>Procedimentos</th>
+                        <th>Clientes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var barbeiro in Model)
+                    {
+                        <tr>
+                            <td>@barbeiro.Id</td>
+                            <td>@barbeiro.NomeCompleto</td>
+                            <td>@barbeiro.Telefone</td>
+                            <td>@barbeiro.TipoAcesso</td>
+                            <td>@barbeiro.Procedimentos.Count</td>
+                            <td>@barbeiro.Clientes.Count</td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@barbeiro.Id">Editar</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Delete" asp-route-id="@barbeiro.Id">Excluir</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

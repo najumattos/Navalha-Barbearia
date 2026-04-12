@@ -10,5 +10,6 @@ namespace Navalha_Barbearia.Repositories.Interfaces
         AgendamentoModel? ObterPorId(int idAgendamento);
         AgendamentoModel Adicionar(AgendamentoModel agendamento);
         AgendamentoModel Atualizar(AgendamentoModel agendamento);
+        void Excluir(int idAgendamento);
     }
 }

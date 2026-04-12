@@ -1,0 +1,50 @@
+@model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
+
+@{
+    ViewData["Title"] = "Agendamentos";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">Agenda</span>
+            <h1 class="h3 mt-2 mb-0">Agendamentos</h1>
+        </div>
+        <a class="btn btn-dark" asp-action="Create">Novo agendamento</a>
+    </div>
+
+    <div class="card-soft p-3 p-md-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Barbeiro</th>
+                        <th>Procedimento</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Preco</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var agendamento in Model.Agendamentos)
+                    {
+                        <tr>
+                            <td>@agendamento.Cliente.NomeCompleto</td>
+                            <td>@agendamento.Barbeiro.NomeCompleto</td>
+                            <td>@agendamento.Procedimento</td>
+                            <td>@agendamento.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@agendamento.StatusAgendamentoEnum</td>
+                            <td>@agendamento.Preco.ToString("C")</td>
+                            <td class="text-end">
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@agendamento.IdAgendamento">Editar</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Delete" asp-route-id="@agendamento.IdAgendamento">Excluir</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

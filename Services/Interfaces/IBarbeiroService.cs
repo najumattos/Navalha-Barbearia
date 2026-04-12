@@ -8,6 +8,8 @@ namespace Navalha_Barbearia.Services.Interfaces
         List<BarbeiroModel> ObterTodos();
         BarbeiroModel? ObterPorId(int id);
         BarbeiroModel Criar(BarbeiroModel barbeiro);
+        BarbeiroModel Atualizar(BarbeiroModel barbeiro);
+        void Excluir(int id);
 
         ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante);
         ProcedimentoModel RemoverProcedimentoDoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante);

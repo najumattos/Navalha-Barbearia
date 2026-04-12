@@ -40,5 +40,19 @@ namespace Navalha_Barbearia.Repositories
             return procedimento;
         }
 
+        public ProcedimentoModel Atualizar(ProcedimentoModel procedimento)
+        {
+            return Adicionar(procedimento);
+        }
+
+        public void Excluir(ProcedimentoEnum procedimentoEnum)
+        {
+            var removidos = _procedimentoLista.RemoveAll(x => x.ProcedimentoEnum == procedimentoEnum);
+            if (removidos == 0)
+            {
+                throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao encontrado.");
+            }
+        }
+
     }
 }

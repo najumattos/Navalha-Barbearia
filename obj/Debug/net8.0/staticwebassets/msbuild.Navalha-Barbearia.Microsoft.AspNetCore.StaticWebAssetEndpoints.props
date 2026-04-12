@@ -4,13 +4,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2160"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 04:52:30 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2160"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 05:02:02 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Navalha-Barbearia/css/site.pe8y0phbpg.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"pe8y0phbpg"},{"Name":"integrity","Value":"sha256-ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k="},{"Name":"label","Value":"_content/Navalha-Barbearia/css/site.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2160"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 04:52:30 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2160"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022ETOIlykJdNB5LogdcBEp4MxVx0QfMIa5q8/VMz5Uh2k=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 05:02:02 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Navalha-Barbearia/favicon.61n19gt1b8.ico">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\favicon.ico'))</AssetFile>
@@ -724,13 +724,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Navalha-Barbearia.klnawyr5ty.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk=\u0022"},{"Name":"Last-Modified","Value":"Sat, 11 Apr 2026 23:14:26 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 15:20:20 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/Navalha-Barbearia/Navalha-Barbearia.klnawyr5ty.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Navalha-Barbearia.klnawyr5ty.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"klnawyr5ty"},{"Name":"integrity","Value":"sha256-CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk="},{"Name":"label","Value":"_content/Navalha-Barbearia/Navalha-Barbearia.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk=\u0022"},{"Name":"Last-Modified","Value":"Sat, 11 Apr 2026 23:14:26 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022CJLX1JfSF9TuGc0gRxiRGz3Tgdy7Ws65g\u002BBn7fp3cfk=\u0022"},{"Name":"Last-Modified","Value":"Sun, 12 Apr 2026 15:20:20 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>

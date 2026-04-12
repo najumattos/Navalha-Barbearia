@@ -1,0 +1,103 @@
+@model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Novo agendamento";
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 960px;">
+        <span class="eyebrow">Cadastro</span>
+        <h1 class="h3 mt-3 mb-4">Novo agendamento</h1>
+
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <input asp-for="Agendamento.StatusAgendamentoEnum" type="hidden" />
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.Cliente.CPF" class="form-label">Cliente</label>
+                <select asp-for="Agendamento.Cliente.CPF" class="form-select" id="cliente-cpf">
+                    <option value="">Selecione</option>
+                    @foreach (var cliente in Model.Clientes)
+                    {
+                        <option value="@cliente.CPF">@cliente.NomeCompleto - @cliente.CPF</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.Barbeiro.Id" class="form-label">Barbeiro</label>
+                <select asp-for="Agendamento.Barbeiro.Id" class="form-select" id="barbeiro-select">
+                    <option value="">Selecione</option>
+                    @foreach (var barbeiro in Model.Barbeiros)
+                    {
+                        <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.Procedimento" class="form-label">Procedimento</label>
+                <select asp-for="Agendamento.Procedimento" class="form-select" id="procedimento-select">
+                    <option value="">Selecione</option>
+                    @foreach (var procedimento in Model.Procedimentos)
+                    {
+                        <option value="@((int)procedimento.ProcedimentoEnum)">@procedimento.ProcedimentoEnum</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.DataHora" class="form-label">Data e hora</label>
+                <input asp-for="Agendamento.DataHora" type="datetime-local" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.Preco" class="form-label">Preco</label>
+                <input asp-for="Agendamento.Preco" type="number" step="0.01" class="form-control" id="preco-input" readonly />
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Agendamento.Observacao" class="form-label">Observacao</label>
+                <textarea asp-for="Agendamento.Observacao" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="col-12 pt-2">
+                <button type="submit" class="btn btn-dark">Salvar</button>
+                <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const mapaPrecos = @Html.Raw(JsonSerializer.Serialize(Model.PrecosPorBarbeiroProcedimento));
+        const barbeiroSelect = document.getElementById("barbeiro-select");
+        const procedimentoSelect = document.getElementById("procedimento-select");
+        const precoInput = document.getElementById("preco-input");
+
+        if (!barbeiroSelect || !procedimentoSelect || !precoInput) {
+            return;
+        }
+
+        function atualizarPreco() {
+            const barbeiroId = barbeiroSelect.value;
+            const procedimentoId = procedimentoSelect.value;
+
+            if (!barbeiroId || !procedimentoId) {
+                precoInput.value = "";
+                return;
+            }
+
+            const precosDoBarbeiro = mapaPrecos[barbeiroId] || {};
+            const preco = precosDoBarbeiro[procedimentoId];
+            precoInput.value = typeof preco === "number" ? preco.toFixed(2) : "";
+        }
+
+        barbeiroSelect.addEventListener("change", atualizarPreco);
+        procedimentoSelect.addEventListener("change", atualizarPreco);
+        atualizarPreco();
+    })();
+</script>
