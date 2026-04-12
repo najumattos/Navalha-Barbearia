@@ -1,0 +1,19 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container py-5">
+    <div class="card-soft p-4 p-md-5">
+        <span class="eyebrow">Erro</span>
+        <h1 class="h3 mt-3 text-danger">Algo deu errado</h1>
+        <p class="text-muted mb-4">A pagina foi desenhada de forma simples para nao distrair o usuario do que realmente importa.</p>
+
+        @if (Model.ShowRequestId)
+        {
+            <p class="mb-0">
+                <strong>Request ID:</strong> <span class="text-break">@Model.RequestId</span>
+            </p>
+        }
+    </div>
+</div>

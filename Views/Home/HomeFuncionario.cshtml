@@ -1,0 +1,135 @@
+@model Navalha_Barbearia.Models.ViewModels.HomeFuncionarioViewModel
+
+@{
+    ViewData["Title"] = "Home Funcionario";
+}
+
+<div class="container py-4">
+    <h1 class="h3 mb-2">Painel do Funcionario</h1>
+    <p class="text-muted mb-4">Profissional: @Model.NomeFuncionario</p>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white fw-semibold">Procedimentos realizados</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Procedimento</th>
+                        <th>Descricao</th>
+                        <th>Preco base</th>
+                        <th>Preco por barbeiro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var procedimento in Model.Procedimentos)
+                    {
+                        <tr>
+                            <td>@procedimento.ProcedimentoEnum</td>
+                            <td>@procedimento.Descricao</td>
+                            <td>@procedimento.PrecoBase.ToString("C")</td>
+                            <td>@procedimento.PrecoPorBarbeiro.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white fw-semibold">Meus agendamentos</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Procedimento</th>
+                        <th>Data e hora</th>
+                        <th>Status</th>
+                        <th>Observacao</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var agendamento in Model.Agendamentos)
+                    {
+                        var formId = $"agendamento-form-{agendamento.IdAgendamento}";
+
+                        <tr>
+                            <td>@agendamento.Cliente.NomeCompleto</td>
+                            <td>@agendamento.Procedimento</td>
+                            <td>
+                                <!-- O atributo form permite manter a tabela limpa e ainda assim enviar o formulario corretamente. -->
+                                <input form="@formId" type="datetime-local" class="form-control form-control-sm" name="DataHora" value="@agendamento.DataHora.ToString("yyyy-MM-ddTHH:mm")" />
+                            </td>
+                            <td>
+                                <select form="@formId" name="StatusAgendamentoEnum" class="form-select form-select-sm">
+                                    <option value="1" selected="@(agendamento.StatusAgendamentoEnum == Navalha_Barbearia.Enums.StatusAgendamentoEnum.Cancelado)">Cancelado</option>
+                                    <option value="2" selected="@(agendamento.StatusAgendamentoEnum == Navalha_Barbearia.Enums.StatusAgendamentoEnum.Agendado)">Agendado</option>
+                                    <option value="3" selected="@(agendamento.StatusAgendamentoEnum == Navalha_Barbearia.Enums.StatusAgendamentoEnum.Concluido)">Concluido</option>
+                                    <option value="4" selected="@(agendamento.StatusAgendamentoEnum == Navalha_Barbearia.Enums.StatusAgendamentoEnum.Pendente)">Pendente</option>
+                                </select>
+                            </td>
+                            <td>
+                                <textarea form="@formId" name="Observacao" class="form-control form-control-sm" rows="2">@agendamento.Observacao</textarea>
+                            </td>
+                            <td>
+                                <form id="@formId" asp-controller="Home" asp-action="AtualizarAgendamentoFuncionario" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <!-- Campos ocultos preservam a identidade do agendamento sem poluir a interface. -->
+                                    <input type="hidden" name="idBarbeiro" value="@Model.IdBarbeiro" />
+                                    <input type="hidden" name="idAgendamento" value="@agendamento.IdAgendamento" />
+                                    <input type="hidden" name="Barbeiro.Id" value="@agendamento.Barbeiro.Id" />
+                                    <input type="hidden" name="Barbeiro.NomeCompleto" value="@agendamento.Barbeiro.NomeCompleto" />
+                                    <input type="hidden" name="Barbeiro.Telefone" value="@agendamento.Barbeiro.Telefone" />
+                                    <input type="hidden" name="Barbeiro.TipoAcesso" value="@((int)agendamento.Barbeiro.TipoAcesso)" />
+                                    <input type="hidden" name="Cliente.Id" value="@agendamento.Cliente.Id" />
+                                    <input type="hidden" name="Cliente.NomeCompleto" value="@agendamento.Cliente.NomeCompleto" />
+                                    <input type="hidden" name="Cliente.Telefone" value="@agendamento.Cliente.Telefone" />
+                                    <input type="hidden" name="Cliente.CPF" value="@agendamento.Cliente.CPF" />
+                                    <input type="hidden" name="Cliente.Endereco" value="@agendamento.Cliente.Endereco" />
+                                    <input type="hidden" name="Cliente.DataNascimento" value="@agendamento.Cliente.DataNascimento.ToString("yyyy-MM-dd")" />
+                                    <input type="hidden" name="Cliente.GeneroEnum" value="@((int)agendamento.Cliente.GeneroEnum)" />
+                                    <input type="hidden" name="Cliente.TipoAcesso" value="@((int)agendamento.Cliente.TipoAcesso)" />
+                                    <input type="hidden" name="Cliente.DataCadastro" value="@agendamento.Cliente.DataCadastro.ToString("yyyy-MM-ddTHH:mm:ss")" />
+                                    <input type="hidden" name="Cliente.Ativo" value="@agendamento.Cliente.Ativo" />
+                                    <input type="hidden" name="Procedimento" value="@((int)agendamento.Procedimento)" />
+                                    <input type="hidden" name="Preco" value="@agendamento.Preco" />
+                                    <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white fw-semibold">Clientes cadastrados por mim</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Data cadastro</th>
+                        <th>Ativo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in Model.Clientes)
+                    {
+                        <tr>
+                            <td>@cliente.NomeCompleto</td>
+                            <td>@cliente.CPF</td>
+                            <td>@cliente.Telefone</td>
+                            <td>@cliente.DataCadastro.ToString("dd/MM/yyyy")</td>
+                            <td>@(cliente.Ativo ? "Sim" : "Nao")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

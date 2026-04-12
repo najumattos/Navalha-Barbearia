@@ -1,0 +1,12 @@
+using Navalha_Barbearia.Enums;
+using Navalha_Barbearia.Models;
+
+namespace Navalha_Barbearia.Repositories.Interfaces
+{
+    public interface IProcedimentoRepository
+    {
+        List<ProcedimentoModel> ObterTodos();
+        ProcedimentoModel? ObterPorTipo(ProcedimentoEnum procedimentoEnum);
+        ProcedimentoModel Adicionar(ProcedimentoModel procedimento);
+    }
+}

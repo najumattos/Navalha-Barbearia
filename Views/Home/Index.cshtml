@@ -1,0 +1,192 @@
+﻿@model Navalha_Barbearia.Models.ViewModels.HomeAgendamentoViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Navalha Barbearia";
+}
+
+<div class="hero-shell py-5">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-12 col-lg-5">
+                <div class="hero-panel h-100 p-4 p-lg-5">
+                    <span class="eyebrow">Navalha Barbearia</span>
+                    <h1 class="display-6 fw-semibold mt-3">Bem-vinda a uma experiencia simples, elegante e objetiva.</h1>
+                    <p class="text-muted mt-3 mb-4">
+                        Um ponto de encontro para cortes, barba e cuidados pessoais com atendimento claro e organizado.
+                    </p>
+
+                    <a class="btn btn-dark btn-lg px-4" asp-controller="Auth" asp-action="Login">Login dos barbeiros</a>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="booking-card h-100 p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                        <div>
+                            <span class="eyebrow">Agendamento rapido</span>
+                            <h2 class="h3 mt-2 mb-0">Agende seu horario</h2>
+                        </div>
+                    </div>
+
+                    <form class="row g-3">
+                        <input asp-for="Agendamento.StatusAgendamentoEnum" type="hidden" />
+                        <input asp-for="Agendamento.Cliente.Id" type="hidden" id="cliente-id" />
+                        <input asp-for="Agendamento.Cliente.Telefone" type="hidden" id="cliente-telefone" />
+
+                        <!-- Estrutura simples: CPF identifica o cliente e permite preencher nome automaticamente. -->
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Cliente.CPF" class="form-label">CPF</label>
+                            <input asp-for="Agendamento.Cliente.CPF" class="form-control" placeholder="000.000.000-00" id="cliente-cpf" />
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Cliente.NomeCompleto" class="form-label">Nome do cliente</label>
+                            <input asp-for="Agendamento.Cliente.NomeCompleto" class="form-control" placeholder="Preenchido pelo CPF" id="cliente-nome" readonly />
+                            <small class="text-muted">Digite o CPF para preencher o nome do cliente automaticamente.</small>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Cliente.GeneroEnum" class="form-label">Genero</label>
+                            <select asp-for="Agendamento.Cliente.GeneroEnum" class="form-select">
+                                <option value="">Selecione</option>
+                                <option value="1">Feminino</option>
+                                <option value="2">Masculino</option>
+                                <option value="3">Outro</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Barbeiro.Id" class="form-label">Barbeiro desejado</label>
+                            <select asp-for="Agendamento.Barbeiro.Id" class="form-select" id="barbeiro-select">
+                                <option value="">Selecione</option>
+                                @foreach (var barbeiro in Model.Barbeiros)
+                                {
+                                    <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Procedimento" class="form-label">Procedimento</label>
+                            <select asp-for="Agendamento.Procedimento" class="form-select" id="procedimento-select">
+                                <option value="">Selecione</option>
+                                <option value="1">Corte</option>
+                                <option value="2">Barba</option>
+                                <option value="3">Sobrancelha</option>
+                                <option value="4">Pedicure</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.DataHora" class="form-label">Data e hora</label>
+                            <input asp-for="Agendamento.DataHora" type="datetime-local" class="form-control" />
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.Preco" class="form-label">Preco</label>
+                            <input asp-for="Agendamento.Preco" type="number" step="0.01" class="form-control" placeholder="0,00" id="preco-input" readonly />
+                            <small class="text-muted">Preco preenchido automaticamente com base no barbeiro selecionado.</small>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Agendamento.Observacao" class="form-label">Observacao</label>
+                            <textarea asp-for="Agendamento.Observacao" class="form-control" rows="3" placeholder="Detalhes opcionais do atendimento"></textarea>
+                        </div>
+
+                        <div class="col-12 pt-2">
+                            <!-- Botao visual apenas: a solicitacao pediu a interface sem definir a logica do clique. -->
+                            <button type="button" class="btn btn-dark px-4">Agendar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Regras simples de UI: atualiza o preco conforme barbeiro + procedimento selecionados.
+    // Codigo limpo: funcao curta, nomes sem abreviacao e comportamento previsivel.
+    (function () {
+        const mapaPrecos = @Html.Raw(JsonSerializer.Serialize(Model.PrecosPorBarbeiroProcedimento));
+        const barbeiroSelect = document.getElementById("barbeiro-select");
+        const procedimentoSelect = document.getElementById("procedimento-select");
+        const precoInput = document.getElementById("preco-input");
+
+        if (!barbeiroSelect || !procedimentoSelect || !precoInput) {
+            return;
+        }
+
+        function atualizarPreco() {
+            const barbeiroId = barbeiroSelect.value;
+            const procedimentoId = procedimentoSelect.value;
+
+            if (!barbeiroId || !procedimentoId) {
+                precoInput.value = "";
+                return;
+            }
+
+            const precosDoBarbeiro = mapaPrecos[barbeiroId] || {};
+            const preco = precosDoBarbeiro[procedimentoId];
+
+            if (typeof preco === "number") {
+                precoInput.value = preco.toFixed(2);
+            } else {
+                precoInput.value = "";
+            }
+        }
+
+        barbeiroSelect.addEventListener("change", atualizarPreco);
+        procedimentoSelect.addEventListener("change", atualizarPreco);
+        atualizarPreco();
+
+        // O auto preenchimento melhora a experiencia sem misturar regra de negocio com a view.
+        const cpfInput = document.getElementById("cliente-cpf");
+        const nomeInput = document.getElementById("cliente-nome");
+        const idInput = document.getElementById("cliente-id");
+        const telefoneInput = document.getElementById("cliente-telefone");
+
+        async function preencherClientePorCpf() {
+            if (!cpfInput || !nomeInput || !idInput || !telefoneInput) {
+                return;
+            }
+
+            const cpf = cpfInput.value?.trim();
+            if (!cpf) {
+                nomeInput.value = "";
+                idInput.value = "";
+                telefoneInput.value = "";
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/Home/BuscarClientePorCpf?cpf=${encodeURIComponent(cpf)}`);
+                if (!resposta.ok) {
+                    nomeInput.value = "";
+                    idInput.value = "";
+                    telefoneInput.value = "";
+                    return;
+                }
+
+                const cliente = await resposta.json();
+                if (!cliente.encontrado) {
+                    nomeInput.value = "";
+                    idInput.value = "";
+                    telefoneInput.value = "";
+                    return;
+                }
+
+                nomeInput.value = cliente.nomeCompleto || "";
+                idInput.value = cliente.id || "";
+                telefoneInput.value = cliente.telefone || "";
+            } catch {
+                nomeInput.value = "";
+                idInput.value = "";
+                telefoneInput.value = "";
+            }
+        }
+
+        cpfInput?.addEventListener("blur", preencherClientePorCpf);
+    })();
+</script>

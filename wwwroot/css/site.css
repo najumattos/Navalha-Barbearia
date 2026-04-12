@@ -1,0 +1,119 @@
+html {
+  font-size: 15px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Base visual neutra: pouca cor, bastante respiro e contraste limpo. */
+body {
+  margin-bottom: 72px;
+  background:
+    radial-gradient(circle at top left, rgba(163, 126, 92, 0.08), transparent 34%),
+    radial-gradient(circle at top right, rgba(23, 37, 84, 0.06), transparent 28%),
+    #f7f4ef;
+  color: #1f1a17;
+}
+
+.site-header {
+  background: rgba(247, 244, 239, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(31, 26, 23, 0.08);
+}
+
+.app-main {
+  padding-top: 1.5rem;
+}
+
+.hero-shell {
+  padding-top: 1rem;
+}
+
+.hero-panel,
+.booking-card,
+.card-soft,
+.login-card,
+.card,
+.table-responsive {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(31, 26, 23, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 42px rgba(31, 26, 23, 0.07);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6f5b46;
+  font-weight: 700;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #2f2721;
+}
+
+.form-control,
+.form-select {
+  min-height: 46px;
+  border-radius: 0.9rem;
+  border-color: #ddd4c8;
+  background-color: #fffdfb;
+}
+
+.form-control:focus,
+.form-select:focus,
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-check-input:focus {
+  border-color: #8f6c4c;
+  box-shadow: 0 0 0 0.2rem rgba(143, 108, 76, 0.14);
+}
+
+.btn-dark {
+  background-color: #1f1a17;
+  border-color: #1f1a17;
+}
+
+.btn-outline-dark {
+  border-color: #1f1a17;
+  color: #1f1a17;
+}
+
+.btn-outline-dark:hover {
+  background-color: #1f1a17;
+  border-color: #1f1a17;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6f5b46;
+  border-bottom-color: rgba(31, 26, 23, 0.1);
+}
+
+.footer {
+  background: transparent;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+}
+
+.login-shell {
+  max-width: 640px;
+}
