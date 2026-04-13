@@ -16,25 +16,40 @@
             <input asp-for="Agendamento.StatusAgendamentoEnum" type="hidden" />
 
             <div class="col-md-6">
-                <label asp-for="Agendamento.Cliente.CPF" class="form-label">Cliente</label>
-                <select asp-for="Agendamento.Cliente.CPF" class="form-select" id="cliente-cpf">
-                    <option value="">Selecione</option>
+                <label asp-for="Agendamento.Cliente.CPF" class="form-label">CPF do cliente</label>
+                <input asp-for="Agendamento.Cliente.CPF" class="form-control" id="cliente-cpf" placeholder="000.000.000-00" />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Agendamento.Cliente.NomeCompleto" class="form-label">Nome completo</label>
+                <input asp-for="Agendamento.Cliente.NomeCompleto" class="form-control" id="cliente-nome" list="clientes-nome-lista" autocomplete="off" />
+                <small class="text-muted">Digite o CPF para preencher automaticamente ou edite manualmente.</small>
+                <datalist id="clientes-nome-lista">
                     @foreach (var cliente in Model.Clientes)
                     {
-                        <option value="@cliente.CPF">@cliente.NomeCompleto - @cliente.CPF</option>
+                        <option value="@cliente.NomeCompleto" data-cpf="@cliente.CPF">@cliente.CPF</option>
                     }
-                </select>
+                </datalist>
             </div>
 
             <div class="col-md-6">
                 <label asp-for="Agendamento.Barbeiro.Id" class="form-label">Barbeiro</label>
-                <select asp-for="Agendamento.Barbeiro.Id" class="form-select" id="barbeiro-select">
-                    <option value="">Selecione</option>
-                    @foreach (var barbeiro in Model.Barbeiros)
-                    {
-                        <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
-                    }
-                </select>
+                @if (ViewBag.PodeEscolherBarbeiro is true)
+                {
+                    <select asp-for="Agendamento.Barbeiro.Id" class="form-select" id="barbeiro-select">
+                        <option value="">Selecione</option>
+                        @foreach (var barbeiro in Model.Barbeiros)
+                        {
+                            <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    var barbeiroLogado = Model.Barbeiros.FirstOrDefault();
+                    <input asp-for="Agendamento.Barbeiro.Id" type="hidden" id="barbeiro-select" value="@(barbeiroLogado?.Id ?? 0)" />
+                    <input class="form-control" value="@(barbeiroLogado?.NomeCompleto ?? "Nao identificado")" readonly />
+                }
             </div>
 
             <div class="col-md-6">
@@ -77,6 +92,9 @@
         const barbeiroSelect = document.getElementById("barbeiro-select");
         const procedimentoSelect = document.getElementById("procedimento-select");
         const precoInput = document.getElementById("preco-input");
+        const cpfInput = document.getElementById("cliente-cpf");
+        const nomeInput = document.getElementById("cliente-nome");
+        const nomesLista = document.getElementById("clientes-nome-lista");
 
         if (!barbeiroSelect || !procedimentoSelect || !precoInput) {
             return;
@@ -99,5 +117,56 @@
         barbeiroSelect.addEventListener("change", atualizarPreco);
         procedimentoSelect.addEventListener("change", atualizarPreco);
         atualizarPreco();
+
+        async function preencherClientePorCpf() {
+            if (!cpfInput || !nomeInput) {
+                return;
+            }
+
+            const cpf = cpfInput.value?.trim();
+            if (!cpf) {
+                nomeInput.value = "";
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/Home/BuscarClientePorCpf?cpf=${encodeURIComponent(cpf)}`);
+                if (!resposta.ok) {
+                    nomeInput.value = "";
+                    return;
+                }
+
+                const cliente = await resposta.json();
+                nomeInput.value = cliente.encontrado ? (cliente.nomeCompleto || "") : "";
+            } catch {
+                nomeInput.value = "";
+            }
+        }
+
+        function preencherCpfPorNome() {
+            if (!cpfInput || !nomeInput || !nomesLista) {
+                return;
+            }
+
+            const nomeDigitado = nomeInput.value?.trim();
+            if (!nomeDigitado) {
+                return;
+            }
+
+            const opcaoCorrespondente = Array.from(nomesLista.options)
+                .find(x => x.value.trim().toLowerCase() === nomeDigitado.toLowerCase());
+
+            if (!opcaoCorrespondente) {
+                return;
+            }
+
+            const cpf = opcaoCorrespondente.dataset.cpf || "";
+            if (cpf) {
+                cpfInput.value = cpf;
+            }
+        }
+
+        cpfInput?.addEventListener("blur", preencherClientePorCpf);
+        nomeInput?.addEventListener("change", preencherCpfPorNome);
     })();
 </script>

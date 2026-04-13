@@ -56,7 +56,7 @@
                             </td>
                             <td>@agendamento.Preco.ToString("C")</td>
                             <td class="text-end">
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Details" asp-route-id="@agendamento.IdAgendamento">Detalhes</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-controller="Home" asp-action="ResumoAgendamento" asp-route-idAgendamento="@agendamento.IdAgendamento">Detalhes</a>
                             </td>
                         </tr>
                     }

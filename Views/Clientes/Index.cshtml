@@ -28,6 +28,7 @@
                         <th>Nome</th>
                         <th>Telefone</th>
                         <th>Genero</th>
+                        <th>Ativo</th>
                         <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
@@ -39,8 +40,12 @@
                             <td>@cliente.NomeCompleto</td>
                             <td>@cliente.Telefone</td>
                             <td>@cliente.GeneroEnum.ToString()</td>
+                            <td>@(cliente.Ativo ? "Sim" : "Não")</td>
                             <td class="text-end">
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Details" asp-route-id="@cliente.Id">Detalhes</a>
+                                @if (cliente.Ativo)
+                                {
+                                    <a class="btn btn-outline-dark btn-sm" asp-action="Details" asp-route-id="@cliente.Id">Detalhes</a>
+                                }
                             </td>
                         </tr>
                     }

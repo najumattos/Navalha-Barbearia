@@ -66,22 +66,56 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Details(int id)
         {
-            var agendamento = _agendamentoService.ObterPorId(id, 0, TipoAcessoEnum.Administrador);
-            return agendamento is null ? NotFound() : View(agendamento);
+            return RedirectToAction("ResumoAgendamento", "Home", new { idAgendamento = id });
         }
 
         public IActionResult Create()
         {
-            return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value is not (TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario))
+            {
+                return Forbid();
+            }
+
+            var viewModel = ObterViewModelParaCreate(new AgendamentoModel(), tipoAcesso.Value);
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(AgendamentoCrudViewModel viewModel)
         {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value is not (TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario))
+            {
+                return Forbid();
+            }
+
+            if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiroLogado = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiroLogado.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                // Funcionario sempre cria agendamento para si mesmo.
+                viewModel.Agendamento.Barbeiro.Id = idBarbeiroLogado.Value;
+            }
+
             if (!ModelState.IsValid)
             {
-                return View(ObterViewModel(viewModel.Agendamento, _agendamentoService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)));
+                return View(ObterViewModelParaCreate(viewModel.Agendamento, tipoAcesso.Value));
             }
 
             _agendamentoService.Criar(viewModel.Agendamento);
@@ -186,6 +220,56 @@ namespace Navalha_Barbearia.Controllers
             {
                 Agendamento = agendamento,
                 Agendamentos = agendamentos,
+                Barbeiros = barbeiros,
+                Clientes = clientes,
+                Procedimentos = procedimentos,
+                PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(
+                    x => x.Id,
+                    x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro))
+            };
+        }
+
+        private AgendamentoCrudViewModel ObterViewModelParaCreate(AgendamentoModel agendamento, TipoAcessoEnum tipoAcesso)
+        {
+            var procedimentos = _procedimentoService.ObterTodos();
+            List<BarbeiroModel> barbeiros;
+            List<ClienteModel> clientes;
+
+            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiroLogado = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiroLogado.HasValue)
+                {
+                    throw new UnauthorizedAccessException("Funcionario sem id de barbeiro na sessao.");
+                }
+
+                var barbeiro = _barbeiroService.ObterPorId(idBarbeiroLogado.Value)
+                    ?? throw new KeyNotFoundException($"Barbeiro {idBarbeiroLogado.Value} nao encontrado.");
+
+                barbeiros = [barbeiro];
+                clientes = _clienteService.ObterPorBarbeiro(idBarbeiroLogado.Value, TipoAcessoEnum.Funcionario)
+                    .Where(x => x.Ativo)
+                    .ToList();
+
+                agendamento.Barbeiro = barbeiro;
+            }
+            else
+            {
+                barbeiros = _barbeiroService.ObterTodos()
+                    .Where(x => x.TipoAcesso is TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario)
+                    .ToList();
+
+                clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
+                    .Where(x => x.Ativo)
+                    .ToList();
+            }
+
+            ViewBag.PodeEscolherBarbeiro = tipoAcesso == TipoAcessoEnum.Administrador;
+
+            return new AgendamentoCrudViewModel
+            {
+                Agendamento = agendamento,
+                Agendamentos = [],
                 Barbeiros = barbeiros,
                 Clientes = clientes,
                 Procedimentos = procedimentos,

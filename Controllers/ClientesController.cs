@@ -90,6 +90,8 @@ namespace Navalha_Barbearia.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            ViewBag.PodeDesativar = tipoAcesso.Value == TipoAcessoEnum.Administrador;
+
             ClienteModel? cliente;
             if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
             {
@@ -117,10 +119,35 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Create()
         {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value is not (TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario))
+            {
+                return Forbid();
+            }
+
+            var barbeiros = _barbeiroService.ObterTodos();
+            if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                barbeiros = barbeiros.Where(x => x.Id == idBarbeiro.Value).ToList();
+            }
+
+            ViewBag.PodeEscolherBarbeiro = tipoAcesso.Value == TipoAcessoEnum.Administrador;
+
             return View(new ClienteCrudViewModel
             {
                 Cliente = new ClienteModel(),
-                Barbeiros = _barbeiroService.ObterTodos()
+                Barbeiros = barbeiros
             });
         }
 
@@ -128,13 +155,51 @@ namespace Navalha_Barbearia.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ClienteCrudViewModel viewModel)
         {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value is not (TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario))
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid)
             {
-                viewModel.Barbeiros = _barbeiroService.ObterTodos();
+                var barbeiros = _barbeiroService.ObterTodos();
+                if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+                {
+                    var idBarbeiroFuncionario = _usuarioContextoService.ObterIdBarbeiro();
+                    if (!idBarbeiroFuncionario.HasValue)
+                    {
+                        return RedirectToAction("Login", "Auth");
+                    }
+
+                    barbeiros = barbeiros.Where(x => x.Id == idBarbeiroFuncionario.Value).ToList();
+                }
+
+                ViewBag.PodeEscolherBarbeiro = tipoAcesso.Value == TipoAcessoEnum.Administrador;
+                viewModel.Barbeiros = barbeiros;
                 return View(viewModel);
             }
 
-            _clienteService.CadastrarPorBarbeiro(viewModel.Cliente.BarbeiroQueCadastrou.Id, viewModel.Cliente, TipoAcessoEnum.Administrador);
+            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
+            {
+                _clienteService.CadastrarPorBarbeiro(viewModel.Cliente.BarbeiroQueCadastrou.Id, viewModel.Cliente, TipoAcessoEnum.Administrador);
+            }
+            else
+            {
+                var idBarbeiroFuncionario = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiroFuncionario.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                _clienteService.CadastrarPorBarbeiro(idBarbeiroFuncionario.Value, viewModel.Cliente, TipoAcessoEnum.Funcionario);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -172,32 +237,13 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Desativar(int id)
         {
             var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
-            if (!tipoAcesso.HasValue)
-            {
-                return RedirectToAction("Login", "Auth");
-            }
-
-            ClienteModel? cliente;
-            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
-            {
-                cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
-                    .FirstOrDefault(x => x.Id == id && x.Ativo);
-            }
-            else if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
-            {
-                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
-                if (!idBarbeiro.HasValue)
-                {
-                    return RedirectToAction("Login", "Auth");
-                }
-
-                cliente = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario)
-                    .FirstOrDefault(x => x.Id == id && x.Ativo);
-            }
-            else
+            if (tipoAcesso != TipoAcessoEnum.Administrador)
             {
                 return Forbid();
             }
+
+            var cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
+                .FirstOrDefault(x => x.Id == id && x.Ativo);
 
             return cliente is null ? NotFound() : View(cliente);
         }
@@ -207,30 +253,13 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult DesativarConfirmed(int id)
         {
             var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
-            if (!tipoAcesso.HasValue)
+            if (tipoAcesso != TipoAcessoEnum.Administrador)
             {
-                return RedirectToAction("Login", "Auth");
+                return Forbid();
             }
 
-            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
-            {
-                _clienteService.DesativarPorAdministrador(id, TipoAcessoEnum.Administrador);
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
-            {
-                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
-                if (!idBarbeiro.HasValue)
-                {
-                    return RedirectToAction("Login", "Auth");
-                }
-
-                _clienteService.DesativarPorBarbeiro(id, idBarbeiro.Value, TipoAcessoEnum.Funcionario);
-                return RedirectToAction(nameof(Index));
-            }
-
-            return Forbid();
+            _clienteService.DesativarPorAdministrador(id, TipoAcessoEnum.Administrador);
+            return RedirectToAction(nameof(Index));
         }
     }
 }
