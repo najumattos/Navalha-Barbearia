@@ -1,79 +1,183 @@
 # Navalha Barbearia
 
-Aplicacao ASP.NET Core MVC (.NET 8) para gestao de barbearia com foco em separacao de responsabilidades, regras de negocio claras e interface simples.
+Aplicacao ASP.NET Core MVC (.NET 8) para gestao de barbearia, com foco em separacao de responsabilidades, regras de negocio por perfil e fluxo de agendamento.
 
-## Resumo da refatoracao desta branch
+## Visao Geral
 
-O README anterior foi limpo e substituido por este documento objetivo.
+O sistema atende tres perfis principais:
+- Administrador
+- Funcionario (barbeiro)
+- Cliente
 
-### Funcionalidade refatorada
+O projeto segue arquitetura em camadas:
+- Controllers: orquestracao das requisicoes HTTP.
+- Services: regras de negocio e validacoes de permissao.
+- Repositories: persistencia em memoria (listas estaticas).
 
-Refatoracao do fluxo de edicao de procedimentos para o perfil administrador.
+## Requisitos Nao Funcionais (RNF)
 
-Antes:
-- A tela de edicao dependia apenas de rota com tipo especifico.
-- Nao havia auto preenchimento dinamico na tela de edicao.
-- O controller nao validava explicitamente o acesso de administrador em todas as acoes sensiveis.
+### RNF de arquitetura e qualidade
+- RNF-01: Arquitetura em camadas com separacao de responsabilidades (Controller, Service e Repository).
+- RNF-02: Uso de injecao de dependencias para servicos e repositorios.
+- RNF-03: Padrao Repository com interfaces para desacoplar regra de negocio da persistencia.
+- RNF-04: Tipagem forte com enums de dominio para reduzir erro por strings livres (tipo de acesso, status e procedimento).
 
-Agora:
-- O administrador abre a tela de edicao e escolhe o `ProcedimentoEnum` em um seletor.
-- Ao selecionar o tipo, a tela busca no backend e preenche automaticamente `Descricao` e `PrecoBase`.
-- O POST usa o `ProcedimentoEnum` do proprio model enviado no formulario.
-- Create, Edit e Delete validam permissao de administrador com guard clauses.
+### RNF de seguranca e acesso
+- RNF-05: Sessao HTTP para contexto do usuario logado, com timeout de 4 horas.
+- RNF-06: Protecao Anti-CSRF em acoes POST por meio de ValidateAntiForgeryToken.
+- RNF-07: Redirecionamento HTTPS e HSTS no pipeline da aplicacao.
+- RNF-08: Controle de autorizacao por perfil em nivel de regra de negocio (guard clauses e validacoes no service/controller).
 
-## Arquivos alterados
+### RNF de dados e operacao
+- RNF-09: Persistencia em memoria para desenvolvimento e demonstracao.
+- RNF-10: Estado inicial consistente para novos agendamentos (status pendente por padrao).
+- RNF-11: Feedback de validacao via ModelState para formularios invalidos.
 
-- `Controllers/ProcedimentosController.cs`
-- `Views/Procedimentos/Edit.cshtml`
-- `README.md`
+### Limitacoes nao funcionais conhecidas
+- RNF-12: Nao ha banco de dados relacional; os dados sao perdidos ao reiniciar a aplicacao.
+- RNF-13: Nao ha autenticacao robusta (Identity/JWT); login e sessao sao simulados em memoria.
+- RNF-14: Senhas de usuarios de desenvolvimento estao em texto simples no repositorio em memoria.
 
-## Detalhes tecnicos da implementacao
+## Regras de Negocio (RN)
 
-### Backend
+### RN de controle de acesso
+- RN-01: Somente Administrador pode visualizar todos os agendamentos.
+- RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao proprio barbeiro.
+- RN-03: Cliente visualiza os proprios agendamentos pelo proprio CPF.
+- RN-04: Somente Administrador cria, edita e exclui procedimentos do catalogo.
 
-Em `ProcedimentosController`:
-- Foi criado o metodo privado `ValidarAcessoAdministrador()`.
-- Foi aplicado o padrao de guard clause nas acoes sensiveis (`Create`, `Edit`, `Delete`) para reduzir aninhamento e deixar o fluxo legivel.
-- A acao `Edit` (GET) passou a aceitar `ProcedimentoEnum?` para permitir abrir a tela sem depender obrigatoriamente de query string.
-- Foi criado o endpoint `BuscarPorTipo(ProcedimentoEnum procedimentoEnum)` para retornar JSON com os dados do procedimento selecionado.
-- A acao `Edit` (POST) foi simplificada para receber `ProcedimentoModel` e atualizar pelo tipo escolhido no formulario.
+### RN de clientes
+- RN-05: Todo cliente cadastrado recebe TipoAcesso = Cliente.
+- RN-06: Todo cliente fica vinculado ao barbeiro que o cadastrou.
+- RN-07: Cliente novo nasce ativo, com data de cadastro preenchida.
+- RN-08: Funcionario gerencia apenas os clientes que cadastrou.
+- RN-09: Arquivamento de cliente e logica de ativacao/desativacao por perfil administrador.
 
-### Frontend
+### RN de agendamento
+- RN-10: Agendamento exige barbeiro valido, CPF de cliente valido e procedimento.
+- RN-11: Status inicial padrao do agendamento e Pendente.
+- RN-12: No fluxo publico da home, ao confirmar agendamento, status vira AguardandoConfirmacaoBarbeiro.
+- RN-13: Status de agendamento so pode ser alterado por perfis autorizados, respeitando o escopo do registro.
+- RN-14: Funcionario pode excluir apenas os proprios agendamentos.
 
-Em `Views/Procedimentos/Edit.cshtml`:
-- O campo de tipo foi convertido para `select` com todos os valores de `ProcedimentoEnum`.
-- Foi adicionado JavaScript para buscar os dados em `/Procedimentos/BuscarPorTipo` e preencher automaticamente descricao e preco base.
-- Foram incluidos comentarios curtos no codigo explicando:
-  - responsabilidade unica de funcoes (SRP),
-  - uso de fonte unica da verdade no backend,
-  - reducao de duplicacao de dados (DRY),
-  - fluxo previsivel e legivel para manutencao.
+### RN de procedimentos e precificacao
+- RN-15: Catalogo de procedimentos usa PrecoBase como referencia.
+- RN-16: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
+- RN-17: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que possuem o procedimento.
+- RN-18: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
+- RN-19: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro.
 
-## Boas praticas aplicadas
+### RN de experiencia no fluxo publico
+- RN-20: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento.
+- RN-21: Home calcula e exibe preco dinamico por barbeiro e procedimento.
+- RN-22: Resumo de agendamento exibe historico recente do cliente.
 
-- SRP: controller com validacao de acesso centralizada e endpoint dedicado para leitura de dados da tela.
-- DRY: reaproveitamento da regra de acesso em um unico metodo privado.
-- Guard Clauses: falha rapida em caso de usuario nao autenticado ou sem permissao.
-- Fonte unica da verdade: dados de procedimento vem do backend para preencher o formulario.
-- Comentarios didaticos: comentarios pontuais para apoiar desenvolvedora junior sem poluir o codigo.
-- UI simples e minimalista: formulario limpo, feedback textual objetivo e interacao direta.
+## Stakeholders (Partes Interessadas)
 
-## Como validar localmente
+### Administrador
+- Objetivo: gerir operacao e padronizacao do negocio.
+- Interesses: visao completa da agenda, gestao de barbeiros, catalogo de procedimentos e clientes.
+- Acoes principais: CRUD de barbeiros, CRUD de procedimentos, visao total de agendamentos, gestao de clientes arquivados.
 
-1. Restaurar dependencias e compilar:
+### Funcionario (Barbeiro)
+- Objetivo: operar atendimento diario e agenda propria.
+- Interesses: manter agenda atualizada, cadastrar clientes e ajustar precificacao propria.
+- Acoes principais: visualizar/editar agendamentos proprios, cadastrar clientes vinculados, ajustar preco por procedimento.
 
-```bash
+### Cliente
+- Objetivo: agendar e acompanhar servicos.
+- Interesses: facilidade para agendar, visibilidade de historico e status.
+- Acoes principais: agendar via home publica, acompanhar historico e alterar status quando permitido.
+
+### Dono/Gestor da Barbearia (patrocinador do sistema)
+- Objetivo: ganho de organizacao operacional e controle do atendimento.
+- Interesses: produtividade da equipe, clareza de agenda e governanca de precos/catalogo.
+- Acoes principais: acompanhar resultado por meio do perfil administrador.
+
+## Casos de Uso
+
+### UC-01 - Autenticar usuario
+- Ator: Administrador, Funcionario, Cliente.
+- Fluxo principal: informar email e senha, validar credenciais, gravar contexto em sessao e redirecionar para home do perfil.
+
+### UC-02 - Realizar logout
+- Ator: qualquer usuario autenticado.
+- Fluxo principal: limpar contexto da sessao e retornar para home publica.
+
+### UC-03 - Agendar pela home publica
+- Ator: publico/cliente.
+- Fluxo principal:
+1. Informar CPF e auto preencher dados de cliente ativo.
+2. Selecionar barbeiro e procedimento.
+3. Informar data e hora.
+4. Visualizar resumo e confirmar.
+5. Gerar agendamento com status AguardandoConfirmacaoBarbeiro.
+
+### UC-04 - Visualizar agendamentos por perfil
+- Ator: Administrador, Funcionario, Cliente.
+- Fluxo principal: listar agendamentos filtrados conforme permissao do perfil.
+
+### UC-05 - Atualizar status de agendamento
+- Ator: Administrador, Funcionario, Cliente.
+- Fluxo principal: alterar status respeitando as regras de autorizacao e escopo do agendamento.
+
+### UC-06 - Gerenciar agendamentos (CRUD interno)
+- Ator: Administrador e Funcionario.
+- Fluxo principal: criar, editar e excluir agendamentos, com restricoes para o funcionario atuar apenas no proprio contexto.
+
+### UC-07 - Gerenciar clientes
+- Ator: Administrador e Funcionario.
+- Fluxo principal: cadastrar/editar cliente, vinculando ao barbeiro responsavel.
+
+### UC-08 - Arquivar e reativar clientes
+- Ator: Administrador.
+- Fluxo principal: desativar cliente na operacao e reativar pela tela de arquivados.
+
+### UC-09 - Gerenciar procedimentos do catalogo
+- Ator: Administrador.
+- Fluxo principal: criar, editar e excluir procedimento com propagacao para dados relacionados.
+
+### UC-10 - Personalizar preco por barbeiro
+- Ator: Funcionario.
+- Fluxo principal: ajustar o PrecoPorBarbeiro para procedimento vinculado ao proprio perfil.
+
+### UC-11 - Gerenciar barbeiros
+- Ator: Administrador.
+- Fluxo principal: criar, editar, listar e excluir barbeiros.
+
+## User Stories (resumo)
+
+- Como administrador, quero visualizar toda a agenda para acompanhar a operacao completa.
+- Como administrador, quero manter o catalogo de procedimentos para padronizar servicos e precos base.
+- Como funcionario, quero ver apenas meus agendamentos para focar no meu atendimento.
+- Como funcionario, quero personalizar meu preco por procedimento para refletir meu posicionamento.
+- Como funcionario, quero cadastrar clientes vinculados a mim para organizar minha carteira.
+- Como cliente, quero agendar rapidamente pela home para reduzir atrito no atendimento.
+- Como cliente, quero consultar meus agendamentos para acompanhar meu historico.
+
+## Como Executar Localmente
+
+1. Restaurar e compilar:
+
+~~~bash
 dotnet build -v minimal
-```
+~~~
 
-2. Executar a aplicacao e testar como administrador:
-- Ir para a tela de procedimentos.
-- Abrir edicao de procedimento.
-- Alterar o tipo no seletor.
-- Confirmar auto preenchimento de descricao e preco base.
-- Salvar e validar se os dados foram persistidos no catalogo.
+2. Executar:
 
-## Observacoes
+~~~bash
+dotnet run
+~~~
 
-- O projeto ainda usa autenticacao/autorizacao simulada em memoria para desenvolvimento.
-- A validacao de permissao aplicada nesta refatoracao segue o contexto de usuario atual em sessao.
+3. Abrir no navegador pela URL exibida no terminal.
+
+## Credenciais de Desenvolvimento
+
+- admin@navalha.com / 123456 (Administrador)
+- funcionario@navalha.com / 123456 (Funcionario)
+- ana@cliente.com / 123456 (Cliente)
+- bianca@cliente.com / 123456 (Cliente)
+
+## Observacao
+
+Este projeto prioriza didatica e clareza de regra de negocio para estudo e evolucao incremental. Para ambiente produtivo, recomenda-se evoluir autenticacao, persistencia, auditoria e observabilidade.
