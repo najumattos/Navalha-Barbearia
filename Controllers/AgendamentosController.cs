@@ -111,6 +111,8 @@ namespace Navalha_Barbearia.Controllers
 
                 // Funcionario sempre cria agendamento para si mesmo.
                 viewModel.Agendamento.Barbeiro.Id = idBarbeiroLogado.Value;
+                // Regra de negocio: no cadastro interno feito pelo barbeiro o status inicial e Agendado.
+                viewModel.Agendamento.StatusAgendamentoEnum = StatusAgendamentoEnum.Agendado;
             }
 
             if (!ModelState.IsValid)
@@ -252,6 +254,8 @@ namespace Navalha_Barbearia.Controllers
                     .ToList();
 
                 agendamento.Barbeiro = barbeiro;
+                // Valor inicial da tela para refletir a regra do fluxo de cadastro pelo funcionario.
+                agendamento.StatusAgendamentoEnum = StatusAgendamentoEnum.Agendado;
             }
             else
             {

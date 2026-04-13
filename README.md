@@ -42,9 +42,9 @@ O projeto segue arquitetura em camadas:
 
 ### RN de controle de acesso
 - RN-01: Somente Administrador pode visualizar todos os agendamentos.
-- RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao proprio barbeiro.
+- RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao seu proprio Id.
 - RN-03: Cliente visualiza os proprios agendamentos pelo proprio CPF.
-- RN-04: Somente Administrador cria, edita e exclui procedimentos do catalogo.
+- RN-04: Somente Administrador cria, edita e exclui procedimentos do catalogo
 
 ### RN de clientes
 - RN-05: Todo cliente cadastrado recebe TipoAcesso = Cliente.
@@ -55,22 +55,22 @@ O projeto segue arquitetura em camadas:
 
 ### RN de agendamento
 - RN-10: Agendamento exige barbeiro valido, CPF de cliente valido e procedimento.
-- RN-11: Status inicial padrao do agendamento e Pendente.
-- RN-12: No fluxo publico da home, ao confirmar agendamento, status vira AguardandoConfirmacaoBarbeiro.
+- RN-11: Status inicial padrao do agendamento quando feito pelo Barbeiro é Agendado.
+- RN-12: No fluxo publico da home(Agendamento rapido), ao confirmar agendamento, status vira AguardandoConfirmacaoBarbeiro.
 - RN-13: Status de agendamento so pode ser alterado por perfis autorizados, respeitando o escopo do registro.
 - RN-14: Funcionario pode excluir apenas os proprios agendamentos.
 
 ### RN de procedimentos e precificacao
 - RN-15: Catalogo de procedimentos usa PrecoBase como referencia.
 - RN-16: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
-- RN-17: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que possuem o procedimento.
+- RN-17: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que realizam o procedimento.
 - RN-18: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
 - RN-19: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro.
 
 ### RN de experiencia no fluxo publico
-- RN-20: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento.
-- RN-21: Home calcula e exibe preco dinamico por barbeiro e procedimento.
-- RN-22: Resumo de agendamento exibe historico recente do cliente.
+- RN-20: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
+- RN-21: O Agendamento Rápido na Home calcula e exibe preco dinamico por barbeiro e procedimento selecionado.
+- RN-22: Resumo de agendamento exibe um recibo com informações do usuario, do agendamento e o historico recente do cliente.
 
 ## Stakeholders (Partes Interessadas)
 
@@ -89,7 +89,7 @@ O projeto segue arquitetura em camadas:
 - Interesses: facilidade para agendar, visibilidade de historico e status.
 - Acoes principais: agendar via home publica, acompanhar historico e alterar status quando permitido.
 
-### Dono/Gestor da Barbearia (patrocinador do sistema)
+### Dono/Gestor da Barbearia (Seu Zé Lucas Alexandrino)
 - Objetivo: ganho de organizacao operacional e controle do atendimento.
 - Interesses: produtividade da equipe, clareza de agenda e governanca de precos/catalogo.
 - Acoes principais: acompanhar resultado por meio do perfil administrador.
@@ -104,7 +104,7 @@ O projeto segue arquitetura em camadas:
 - Ator: qualquer usuario autenticado.
 - Fluxo principal: limpar contexto da sessao e retornar para home publica.
 
-### UC-03 - Agendar pela home publica
+### UC-03 - Agendamento rápido pela home publica
 - Ator: publico/cliente.
 - Fluxo principal:
 1. Informar CPF e auto preencher dados de cliente ativo.
@@ -181,3 +181,7 @@ dotnet run
 ## Observacao
 
 Este projeto prioriza didatica e clareza de regra de negocio para estudo e evolucao incremental. Para ambiente produtivo, recomenda-se evoluir autenticacao, persistencia, auditoria e observabilidade.
+
+PAQ -Padrão Ana Julia de Qualidade :D
+Revisado 13/04 15:20
+
