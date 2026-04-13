@@ -110,6 +110,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Qcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/workspaces/Navalha-Barbearia/Views/Home/ResumoAgendamento.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9SZXN1bW9BZ2VuZGFtZW50by5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/workspaces/Navalha-Barbearia/Views/Procedimentos/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUHJvY2VkaW1lbnRvcy9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

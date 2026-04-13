@@ -34,7 +34,11 @@
                         </div>
                     </div>
 
-                    <form class="row g-3">
+                    <form asp-controller="Home" asp-action="Agendar" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
                         <input asp-for="Agendamento.StatusAgendamentoEnum" type="hidden" />
                         <input asp-for="Agendamento.Cliente.Id" type="hidden" id="cliente-id" />
                         <input asp-for="Agendamento.Cliente.Telefone" type="hidden" id="cliente-telefone" />
@@ -49,16 +53,6 @@
                             <label asp-for="Agendamento.Cliente.NomeCompleto" class="form-label">Nome do cliente</label>
                             <input asp-for="Agendamento.Cliente.NomeCompleto" class="form-control" placeholder="Preenchido pelo CPF" id="cliente-nome" readonly />
                             <small class="text-muted">Digite o CPF para preencher o nome do cliente automaticamente.</small>
-                        </div>
-
-                        <div class="col-12 col-md-6">
-                            <label asp-for="Agendamento.Cliente.GeneroEnum" class="form-label">Genero</label>
-                            <select asp-for="Agendamento.Cliente.GeneroEnum" class="form-select">
-                                <option value="">Selecione</option>
-                                <option value="1">Feminino</option>
-                                <option value="2">Masculino</option>
-                                <option value="3">Outro</option>
-                            </select>
                         </div>
 
                         <div class="col-12 col-md-6">
@@ -100,8 +94,7 @@
                         </div>
 
                         <div class="col-12 pt-2">
-                            <!-- Botao visual apenas: a solicitacao pediu a interface sem definir a logica do clique. -->
-                            <button type="button" class="btn btn-dark px-4">Agendar</button>
+                            <button type="submit" class="btn btn-dark px-4">Agendar</button>
                         </div>
                     </form>
                 </div>

@@ -6,6 +6,8 @@ namespace Navalha_Barbearia.Enums
         Cancelado = 1,
         Agendado = 2,
         Concluido = 3,
-        Pendente = 4
+        Pendente = 4, 
+        AguardandoConfirmacaoBarbeiro = 5,
+        AguardandoConfirmacaoCliente = 6
     }
 }

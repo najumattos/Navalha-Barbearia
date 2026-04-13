@@ -34,6 +34,104 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Index()
         {
+            return View(CriarHomeAgendamentoViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Agendar(HomeAgendamentoViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento));
+            }
+
+            try
+            {
+                var resumoViewModel = CriarResumoAgendamentoViewModel(viewModel.Agendamento, exibirBotaoConfirmar: true);
+                return View(nameof(ResumoAgendamento), resumoViewModel);
+            }
+            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ConfirmarAgendamento(HomeResumoAgendamentoViewModel viewModel)
+        {
+            try
+            {
+                var agendamentoParaCriar = viewModel.AgendamentoAtual;
+                agendamentoParaCriar.StatusAgendamentoEnum = StatusAgendamentoEnum.AguardandoConfirmacaoBarbeiro;
+
+                var agendamentoCriado = _agendamentoService.Criar(agendamentoParaCriar);
+                return RedirectToAction(nameof(ResumoAgendamento), new { idAgendamento = agendamentoCriado.IdAgendamento });
+            }
+            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                var resumoViewModel = CriarResumoAgendamentoViewModel(viewModel.AgendamentoAtual, exibirBotaoConfirmar: true);
+                return View(nameof(ResumoAgendamento), resumoViewModel);
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ResumoAgendamento(int idAgendamento)
+        {
+            var agendamentoAtual = _agendamentoService.ObterPorId(idAgendamento, 0, TipoAcessoEnum.Administrador);
+            if (agendamentoAtual is null)
+            {
+                return NotFound();
+            }
+
+            var cliente = _clienteService.ObterPorCpfPublico(agendamentoAtual.Cliente.CPF) ?? agendamentoAtual.Cliente;
+            var historicoRecente = _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)
+                .Where(x => x.IdAgendamento != agendamentoAtual.IdAgendamento)
+                .OrderByDescending(x => x.DataHora)
+                .Take(2)
+                .ToList();
+
+            return View(new HomeResumoAgendamentoViewModel
+            {
+                Cliente = cliente,
+                AgendamentoAtual = agendamentoAtual,
+                HistoricoRecente = historicoRecente,
+                ExibirBotaoConfirmar = false
+            });
+        }
+
+        private HomeResumoAgendamentoViewModel CriarResumoAgendamentoViewModel(AgendamentoModel agendamentoAtual, bool exibirBotaoConfirmar)
+        {
+            var barbeiro = _barbeiroService.ObterPorId(agendamentoAtual.Barbeiro.Id)
+                ?? throw new KeyNotFoundException("Barbeiro nao encontrado para o agendamento.");
+
+            var cliente = _clienteService.ObterPorCpfPublico(agendamentoAtual.Cliente.CPF)
+                ?? throw new KeyNotFoundException("Cliente nao encontrado para o CPF informado.");
+
+            var historicoRecente = _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)
+                .OrderByDescending(x => x.DataHora)
+                .Take(2)
+                .ToList();
+
+            agendamentoAtual.Barbeiro = barbeiro;
+            agendamentoAtual.Cliente = cliente;
+            agendamentoAtual.Preco = ObterPrecoPorBarbeiro(barbeiro, agendamentoAtual.Procedimento);
+
+            return new HomeResumoAgendamentoViewModel
+            {
+                Cliente = cliente,
+                AgendamentoAtual = agendamentoAtual,
+                HistoricoRecente = historicoRecente,
+                ExibirBotaoConfirmar = exibirBotaoConfirmar
+            };
+        }
+
+        private HomeAgendamentoViewModel CriarHomeAgendamentoViewModel(AgendamentoModel? agendamentoBase = null)
+        {
             // A Home apresenta o formulario inicial sem acoplar regra de negocio de envio.
             var barbeiros = _barbeiroService.ObterTodos()
                 .Where(x => x.TipoAcesso is TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario)
@@ -47,9 +145,19 @@ namespace Navalha_Barbearia.Controllers
                 x => x.Id,
                 x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro));
 
-            return View(new HomeAgendamentoViewModel
+            if (agendamentoBase is not null && agendamentoBase.Barbeiro.Id > 0)
             {
-                Agendamento = new AgendamentoModel
+                var barbeiroSelecionado = barbeiros.FirstOrDefault(x => x.Id == agendamentoBase.Barbeiro.Id);
+                if (barbeiroSelecionado is not null)
+                {
+                    agendamentoBase.Barbeiro = barbeiroSelecionado;
+                    agendamentoBase.Preco = ObterPrecoPorBarbeiro(barbeiroSelecionado, agendamentoBase.Procedimento);
+                }
+            }
+
+            return new HomeAgendamentoViewModel
+            {
+                Agendamento = agendamentoBase ?? new AgendamentoModel
                 {
                     DataHora = DateTime.Now.AddDays(1),
                     StatusAgendamentoEnum = StatusAgendamentoEnum.Pendente,
@@ -60,7 +168,7 @@ namespace Navalha_Barbearia.Controllers
                 },
                 Barbeiros = barbeiros,
                 PrecosPorBarbeiroProcedimento = mapaPrecos
-            });
+            };
         }
 
         private static decimal ObterPrecoPorBarbeiro(BarbeiroModel barbeiro, ProcedimentoEnum procedimento)
