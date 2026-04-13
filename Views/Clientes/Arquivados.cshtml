@@ -1,0 +1,60 @@
+@model Navalha_Barbearia.Models.ViewModels.ClienteCrudViewModel
+
+@{
+    ViewData["Title"] = "Clientes arquivados";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="eyebrow">Arquivo</span>
+            <h1 class="h3 mt-2 mb-0">Clientes arquivados</h1>
+        </div>
+        <a class="btn btn-outline-dark" asp-action="Index">Voltar para clientes ativos</a>
+    </div>
+
+    <div class="card-soft p-3 p-md-4">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Data de cadastro</th>
+                        <th class="text-end">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Clientes.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Nenhum cliente arquivado encontrado.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cliente in Model.Clientes)
+                        {
+                            <tr>
+                                <td>@cliente.Id</td>
+                                <td>@cliente.NomeCompleto</td>
+                                <td>@cliente.CPF</td>
+                                <td>@cliente.Telefone</td>
+                                <td>@cliente.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end">
+                                    <form asp-action="Ativar" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@cliente.Id" />
+                                        <button type="submit" class="btn btn-outline-dark btn-sm">Ativar cliente</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

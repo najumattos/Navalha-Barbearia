@@ -23,8 +23,14 @@ namespace Navalha_Barbearia.Controllers
         {
             // O mesmo endpoint Index atende perfis diferentes sem duplicar controller (DRY).
             var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
 
-            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            ViewBag.PodeVerArquivados = tipoAcesso.Value == TipoAcessoEnum.Administrador;
+
+            if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
             {
                 var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
                 if (!idBarbeiro.HasValue)
@@ -34,22 +40,77 @@ namespace Navalha_Barbearia.Controllers
 
                 return View(new ClienteCrudViewModel
                 {
-                    Clientes = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario),
+                    // A listagem principal mostra apenas clientes ativos; arquivados ficam em tela dedicada.
+                    Clientes = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario).Where(x => x.Ativo).ToList(),
                     Barbeiros = _barbeiroService.ObterTodos().Where(x => x.Id == idBarbeiro.Value).ToList()
                 });
             }
 
             return View(new ClienteCrudViewModel
             {
-                Clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador),
+                Clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador).Where(x => x.Ativo).ToList(),
                 Barbeiros = _barbeiroService.ObterTodos()
             });
         }
 
+        public IActionResult Arquivados()
+        {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso != TipoAcessoEnum.Administrador)
+            {
+                return Forbid();
+            }
+
+            return View(new ClienteCrudViewModel
+            {
+                Clientes = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador).Where(x => !x.Ativo).ToList(),
+                Barbeiros = _barbeiroService.ObterTodos()
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Ativar(int id)
+        {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso != TipoAcessoEnum.Administrador)
+            {
+                return Forbid();
+            }
+
+            _clienteService.AtivarPorAdministrador(id, TipoAcessoEnum.Administrador);
+            return RedirectToAction(nameof(Arquivados));
+        }
+
         public IActionResult Details(int id)
         {
-            var cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
-                .FirstOrDefault(x => x.Id == id);
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ClienteModel? cliente;
+            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
+            {
+                cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
+                    .FirstOrDefault(x => x.Id == id);
+            }
+            else if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                cliente = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario)
+                    .FirstOrDefault(x => x.Id == id);
+            }
+            else
+            {
+                return Forbid();
+            }
 
             return cliente is null ? NotFound() : View(cliente);
         }
@@ -108,20 +169,68 @@ namespace Navalha_Barbearia.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(int id)
+        public IActionResult Desativar(int id)
         {
-            var cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
-                .FirstOrDefault(x => x.Id == id);
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ClienteModel? cliente;
+            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
+            {
+                cliente = _clienteService.ObterTodosParaAdministrador(TipoAcessoEnum.Administrador)
+                    .FirstOrDefault(x => x.Id == id && x.Ativo);
+            }
+            else if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                cliente = _clienteService.ObterPorBarbeiro(idBarbeiro.Value, TipoAcessoEnum.Funcionario)
+                    .FirstOrDefault(x => x.Id == id && x.Ativo);
+            }
+            else
+            {
+                return Forbid();
+            }
 
             return cliente is null ? NotFound() : View(cliente);
         }
 
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("Desativar")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult DesativarConfirmed(int id)
         {
-            _clienteService.ExcluirPorAdministrador(id, TipoAcessoEnum.Administrador);
-            return RedirectToAction(nameof(Index));
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
+            {
+                _clienteService.DesativarPorAdministrador(id, TipoAcessoEnum.Administrador);
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+            {
+                var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                if (!idBarbeiro.HasValue)
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                _clienteService.DesativarPorBarbeiro(id, idBarbeiro.Value, TipoAcessoEnum.Funcionario);
+                return RedirectToAction(nameof(Index));
+            }
+
+            return Forbid();
         }
     }
 }

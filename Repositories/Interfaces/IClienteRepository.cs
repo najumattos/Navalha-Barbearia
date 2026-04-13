@@ -11,6 +11,7 @@ namespace Navalha_Barbearia.Repositories.Interfaces
         ClienteModel Adicionar(ClienteModel cliente);
         ClienteModel Atualizar(ClienteModel cliente);
         ClienteModel Desativar(int id);
+        ClienteModel Ativar(int id);
         void Excluir(int id);
     }
 }
