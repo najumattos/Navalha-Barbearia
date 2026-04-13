@@ -51,7 +51,39 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Details(ProcedimentoEnum procedimentoEnum)
         {
             var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
-            return procedimento is null ? NotFound() : View(procedimento);
+            if (procedimento is null)
+            {
+                return NotFound();
+            }
+
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            var ehAdministrador = tipoAcesso == TipoAcessoEnum.Administrador;
+
+            // A listagem de preco por barbeiro e exclusiva para o administrador para manter o escopo de permissao.
+            var precosPorBarbeiro = ehAdministrador
+                ? _barbeiroService.ObterTodos()
+                    .Select(barbeiro => new PrecoProcedimentoPorBarbeiroViewModel
+                    {
+                        BarbeiroId = barbeiro.Id,
+                        NomeBarbeiro = barbeiro.NomeCompleto,
+                        PrecoPorBarbeiro = barbeiro.Procedimentos
+                            .FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum)
+                            ?.PrecoPorBarbeiro ?? procedimento.PrecoBase
+                    })
+                    .OrderBy(x => x.NomeBarbeiro)
+                    .ToList()
+                : new List<PrecoProcedimentoPorBarbeiroViewModel>();
+
+            var viewModel = new ProcedimentoDetalhesViewModel
+            {
+                ProcedimentoEnum = procedimento.ProcedimentoEnum,
+                Descricao = procedimento.Descricao,
+                PrecoBase = procedimento.PrecoBase,
+                PodeVisualizarPrecosPorBarbeiro = ehAdministrador,
+                PrecosPorBarbeiro = precosPorBarbeiro
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult Create()

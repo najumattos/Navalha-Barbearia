@@ -125,15 +125,15 @@ namespace Navalha_Barbearia.Services
         public AgendamentoModel AtualizarDoFuncionario(int idAgendamento, int barbeiroIdSolicitante, AgendamentoModel agendamento, TipoAcessoEnum tipoAcessoSolicitante)
         {
             // Regra de negocio: somente Funcionario altera os agendamentos vinculados ao proprio id.
-            if (tipoAcessoSolicitante != TipoAcessoEnum.Funcionario)
+            if (tipoAcessoSolicitante is not (TipoAcessoEnum.Funcionario or TipoAcessoEnum.Administrador))
             {
-                throw new UnauthorizedAccessException("Somente Funcionario pode alterar agendamentos vinculados ao seu id.");
+                throw new UnauthorizedAccessException("Somente Funcionario ou Administrador pode alterar agendamentos.");
             }
 
             var agendamentoExistente = _agendamentoRepository.ObterPorId(idAgendamento)
                 ?? throw new KeyNotFoundException($"Agendamento {idAgendamento} nao encontrado.");
 
-            if (agendamentoExistente.Barbeiro.Id != barbeiroIdSolicitante)
+            if (tipoAcessoSolicitante == TipoAcessoEnum.Funcionario && agendamentoExistente.Barbeiro.Id != barbeiroIdSolicitante)
             {
                 throw new UnauthorizedAccessException("Funcionario pode alterar apenas os agendamentos vinculados ao seu id.");
             }
@@ -144,6 +144,45 @@ namespace Navalha_Barbearia.Services
             agendamentoExistente.Observacao = agendamento.Observacao;
 
             return _agendamentoRepository.Atualizar(agendamentoExistente);
+        }
+
+        public AgendamentoModel AtualizarStatus(int idAgendamento, StatusAgendamentoEnum status, TipoAcessoEnum tipoAcessoSolicitante, int? barbeiroIdSolicitante = null, string? cpfClienteSolicitante = null)
+        {
+            var agendamento = _agendamentoRepository.ObterPorId(idAgendamento)
+                ?? throw new KeyNotFoundException($"Agendamento {idAgendamento} nao encontrado.");
+
+            // Regra centralizada: cada perfil pode mudar apenas o proprio conjunto de agendamentos.
+            if (tipoAcessoSolicitante == TipoAcessoEnum.Funcionario)
+            {
+                if (!barbeiroIdSolicitante.HasValue)
+                {
+                    throw new ArgumentException("Id do barbeiro e obrigatorio para atualizar o status.");
+                }
+
+                if (agendamento.Barbeiro.Id != barbeiroIdSolicitante.Value)
+                {
+                    throw new UnauthorizedAccessException("Funcionario pode alterar apenas os proprios agendamentos.");
+                }
+            }
+            else if (tipoAcessoSolicitante == TipoAcessoEnum.Cliente)
+            {
+                if (string.IsNullOrWhiteSpace(cpfClienteSolicitante))
+                {
+                    throw new ArgumentException("CPF do cliente e obrigatorio para atualizar o status.");
+                }
+
+                if (!agendamento.Cliente.CPF.Equals(cpfClienteSolicitante, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new UnauthorizedAccessException("Cliente pode alterar apenas o proprio agendamento.");
+                }
+            }
+            else if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
+            {
+                throw new UnauthorizedAccessException("Acesso permitido apenas para Admin, Funcionario ou Cliente.");
+            }
+
+            agendamento.StatusAgendamentoEnum = status;
+            return _agendamentoRepository.Atualizar(agendamento);
         }
 
         public AgendamentoModel AtualizarStatusDoCliente(int idAgendamento, string cpfClienteSolicitante, StatusAgendamentoEnum status, TipoAcessoEnum tipoAcessoSolicitante)

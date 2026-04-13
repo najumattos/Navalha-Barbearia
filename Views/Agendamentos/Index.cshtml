@@ -1,4 +1,5 @@
 @model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
+@using Navalha_Barbearia.Enums
 
 @{
     ViewData["Title"] = "Agendamentos";
@@ -30,16 +31,32 @@
                 <tbody>
                     @foreach (var agendamento in Model.Agendamentos)
                     {
+                        var formId = $"status-form-{agendamento.IdAgendamento}";
+
                         <tr>
                             <td>@agendamento.Cliente.NomeCompleto</td>
                             <td>@agendamento.Barbeiro.NomeCompleto</td>
                             <td>@agendamento.Procedimento</td>
                             <td>@agendamento.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@agendamento.StatusAgendamentoEnum</td>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    <form id="@formId" asp-action="AtualizarStatus" method="post" class="d-flex gap-2 align-items-center">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idAgendamento" value="@agendamento.IdAgendamento" />
+                                        <select name="status" class="form-select form-select-sm">
+                                            @foreach (var status in Enum.GetValues<StatusAgendamentoEnum>())
+                                            {
+                                                <option value="@((int)status)" selected="@(agendamento.StatusAgendamentoEnum == status)">@status</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
+                                    </form>
+                                    <small class="text-muted">Atualizacao direta do status sem abrir a edicao completa.</small>
+                                </div>
+                            </td>
                             <td>@agendamento.Preco.ToString("C")</td>
                             <td class="text-end">
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@agendamento.IdAgendamento">Editar</a>
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Delete" asp-route-id="@agendamento.IdAgendamento">Excluir</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-action="Details" asp-route-id="@agendamento.IdAgendamento">Detalhes</a>
                             </td>
                         </tr>
                     }

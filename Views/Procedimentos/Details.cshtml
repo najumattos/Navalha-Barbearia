@@ -1,4 +1,4 @@
-@model Navalha_Barbearia.Models.ProcedimentoModel
+@model Navalha_Barbearia.Models.ViewModels.ProcedimentoDetalhesViewModel
 
 @{
     ViewData["Title"] = "Detalhes do procedimento";
@@ -19,9 +19,35 @@
             <dd class="col-sm-8">@Model.PrecoBase.ToString("C")</dd>
         </dl>
 
+        @if (Model.PodeVisualizarPrecosPorBarbeiro)
+        {
+            <hr class="my-4" />
+            <h2 class="h5 mb-3">Preco praticado por barbeiro</h2>
+            <p class="text-muted mb-3">Transparencia de valores: cada barbeiro pode ter preco proprio para este procedimento.</p>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Barbeiro</th>
+                            <th class="text-end">Preco cobrado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.PrecosPorBarbeiro)
+                        {
+                            <tr>
+                                <td>@item.NomeBarbeiro</td>
+                                <td class="text-end">@item.PrecoPorBarbeiro.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
         <div class="d-flex gap-2 pt-4">
             <a class="btn btn-dark" asp-action="Edit" asp-route-procedimentoEnum="@Model.ProcedimentoEnum">Editar</a>
-            <a class="btn btn-outline-danger" asp-action="Delete" asp-route-procedimentoEnum="@Model.ProcedimentoEnum">Excluir</a>
             <a class="btn btn-outline-dark" asp-action="Index">Voltar</a>
         </div>
     </div>

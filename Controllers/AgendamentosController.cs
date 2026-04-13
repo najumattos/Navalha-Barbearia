@@ -107,6 +107,61 @@ namespace Navalha_Barbearia.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AtualizarStatus(int idAgendamento, StatusAgendamentoEnum status)
+        {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (!tipoAcesso.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            try
+            {
+                if (tipoAcesso.Value == TipoAcessoEnum.Funcionario)
+                {
+                    var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+                    if (!idBarbeiro.HasValue)
+                    {
+                        return RedirectToAction("Login", "Auth");
+                    }
+
+                    _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Funcionario, idBarbeiro.Value);
+                }
+                else if (tipoAcesso.Value == TipoAcessoEnum.Cliente)
+                {
+                    var idCliente = _usuarioContextoService.ObterIdCliente();
+                    if (!idCliente.HasValue)
+                    {
+                        return RedirectToAction("Login", "Auth");
+                    }
+
+                    var cliente = _clienteService.ObterPerfilCliente(idCliente.Value, TipoAcessoEnum.Cliente);
+                    _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Cliente, cpfClienteSolicitante: cliente.CPF);
+                }
+                else if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
+                {
+                    _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Administrador);
+                }
+                else
+                {
+                    return Forbid();
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         public IActionResult Delete(int id)
         {
             var agendamento = _agendamentoService.ObterPorId(id, 0, TipoAcessoEnum.Administrador);
