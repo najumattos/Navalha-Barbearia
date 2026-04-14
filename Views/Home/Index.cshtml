@@ -40,6 +40,7 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <input asp-for="Agendamento.StatusAgendamentoEnum" type="hidden" />
+                        <input asp-for="Agendamento.DataHora" type="hidden" />
                         <input asp-for="Agendamento.Cliente.Id" type="hidden" id="cliente-id" />
                         <input asp-for="Agendamento.Cliente.Telefone" type="hidden" id="cliente-telefone" />
 
@@ -78,8 +79,19 @@
                         </div>
 
                         <div class="col-12 col-md-6">
-                            <label asp-for="Agendamento.DataHora" class="form-label">Data e hora</label>
-                            <input asp-for="Agendamento.DataHora" type="datetime-local" class="form-control" />
+                            <label asp-for="DataSelecionada" class="form-label">Data</label>
+                            <input asp-for="DataSelecionada" type="date" class="form-control" id="data-select" />
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Agendamento.SlotHorarioId" class="form-label">Horario disponivel</label>
+                            <select asp-for="Agendamento.SlotHorarioId" class="form-select" id="slot-select">
+                                <option value="">Selecione</option>
+                                @foreach (var slot in Model.SlotsDisponiveis)
+                                {
+                                    <option value="@slot.Id">@slot.Inicio.ToString("HH:mm") - @slot.Fim.ToString("HH:mm")</option>
+                                }
+                            </select>
                         </div>
 
                         <div class="col-12 col-md-6">
@@ -111,8 +123,10 @@
         const barbeiroSelect = document.getElementById("barbeiro-select");
         const procedimentoSelect = document.getElementById("procedimento-select");
         const precoInput = document.getElementById("preco-input");
+        const dataSelect = document.getElementById("data-select");
+        const slotSelect = document.getElementById("slot-select");
 
-        if (!barbeiroSelect || !procedimentoSelect || !precoInput) {
+        if (!barbeiroSelect || !procedimentoSelect || !precoInput || !dataSelect || !slotSelect) {
             return;
         }
 
@@ -138,6 +152,40 @@
         barbeiroSelect.addEventListener("change", atualizarPreco);
         procedimentoSelect.addEventListener("change", atualizarPreco);
         atualizarPreco();
+
+        async function carregarSlots() {
+            const barbeiroId = barbeiroSelect.value;
+            const data = dataSelect.value;
+            const slotSelecionado = slotSelect.value;
+
+            slotSelect.innerHTML = '<option value="">Selecione</option>';
+
+            if (!barbeiroId || !data) {
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/Home/BuscarSlotsDisponiveis?barbeiroId=${encodeURIComponent(barbeiroId)}&data=${encodeURIComponent(data)}`);
+                if (!resposta.ok) {
+                    return;
+                }
+
+                const slots = await resposta.json();
+                for (const slot of slots) {
+                    const option = document.createElement("option");
+                    option.value = slot.id;
+                    option.textContent = `${slot.inicioFormatado} - ${slot.fimFormatado}`;
+                    option.selected = String(slot.id) === String(slotSelecionado);
+                    slotSelect.appendChild(option);
+                }
+            } catch {
+                // Sem interromper o restante do formulario.
+            }
+        }
+
+        barbeiroSelect.addEventListener("change", carregarSlots);
+        dataSelect.addEventListener("change", carregarSlots);
+        carregarSlots();
 
         // O auto preenchimento melhora a experiencia sem misturar regra de negocio com a view.
         const cpfInput = document.getElementById("cliente-cpf");

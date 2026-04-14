@@ -17,6 +17,8 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IAgendamentoRepository, AgendamentoRepository>();
 builder.Services.AddScoped<IAgendamentoService, AgendamentoService>();
+builder.Services.AddScoped<ISlotHorarioService, SlotHorarioService>();
+builder.Services.AddScoped<IAgendamentoValidacaoService, AgendamentoValidacaoService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUsuarioContextoService, UsuarioContextoService>();
 builder.Services.AddSession(options =>

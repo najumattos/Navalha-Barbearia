@@ -13,6 +13,7 @@ namespace Navalha_Barbearia.Controllers
         private readonly IBarbeiroService _barbeiroService;
         private readonly IClienteService _clienteService;
         private readonly IAgendamentoService _agendamentoService;
+        private readonly ISlotHorarioService _slotHorarioService;
         private readonly ILoginService _loginService;
         private readonly IUsuarioContextoService _usuarioContextoService;
 
@@ -21,6 +22,7 @@ namespace Navalha_Barbearia.Controllers
             IBarbeiroService barbeiroService,
             IClienteService clienteService,
             IAgendamentoService agendamentoService,
+            ISlotHorarioService slotHorarioService,
             ILoginService loginService,
             IUsuarioContextoService usuarioContextoService)
         {
@@ -28,6 +30,7 @@ namespace Navalha_Barbearia.Controllers
             _barbeiroService = barbeiroService;
             _clienteService = clienteService;
             _agendamentoService = agendamentoService;
+            _slotHorarioService = slotHorarioService;
             _loginService = loginService;
             _usuarioContextoService = usuarioContextoService;
         }
@@ -43,7 +46,7 @@ namespace Navalha_Barbearia.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento));
+                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento, viewModel.DataSelecionada));
             }
 
             try
@@ -51,10 +54,10 @@ namespace Navalha_Barbearia.Controllers
                 var resumoViewModel = CriarResumoAgendamentoViewModel(viewModel.Agendamento, exibirBotaoConfirmar: true);
                 return View(nameof(ResumoAgendamento), resumoViewModel);
             }
-            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException)
+            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException or InvalidOperationException)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
-                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento));
+                return View("Index", CriarHomeAgendamentoViewModel(viewModel.Agendamento, viewModel.DataSelecionada));
             }
         }
 
@@ -70,7 +73,7 @@ namespace Navalha_Barbearia.Controllers
                 var agendamentoCriado = _agendamentoService.Criar(agendamentoParaCriar);
                 return RedirectToAction(nameof(ResumoAgendamento), new { idAgendamento = agendamentoCriado.IdAgendamento });
             }
-            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException)
+            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException or InvalidOperationException)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
 
@@ -106,8 +109,21 @@ namespace Navalha_Barbearia.Controllers
 
         private HomeResumoAgendamentoViewModel CriarResumoAgendamentoViewModel(AgendamentoModel agendamentoAtual, bool exibirBotaoConfirmar)
         {
+            if (agendamentoAtual.SlotHorarioId <= 0)
+            {
+                throw new ArgumentException("Selecione um slot de horario para continuar.");
+            }
+
+            var slotSelecionado = _slotHorarioService.ObterPorId(agendamentoAtual.SlotHorarioId)
+                ?? throw new KeyNotFoundException($"Slot de horario {agendamentoAtual.SlotHorarioId} nao encontrado.");
+
             var barbeiro = _barbeiroService.ObterPorId(agendamentoAtual.Barbeiro.Id)
                 ?? throw new KeyNotFoundException("Barbeiro nao encontrado para o agendamento.");
+
+            if (slotSelecionado.BarbeiroId != barbeiro.Id)
+            {
+                throw new ArgumentException("O slot selecionado nao pertence ao barbeiro informado.");
+            }
 
             var cliente = _clienteService.ObterPorCpfPublico(agendamentoAtual.Cliente.CPF)
                 ?? throw new KeyNotFoundException("Cliente nao encontrado para o CPF informado.");
@@ -119,6 +135,7 @@ namespace Navalha_Barbearia.Controllers
 
             agendamentoAtual.Barbeiro = barbeiro;
             agendamentoAtual.Cliente = cliente;
+            agendamentoAtual.DataHora = slotSelecionado.Inicio;
             agendamentoAtual.Preco = ObterPrecoPorBarbeiro(barbeiro, agendamentoAtual.Procedimento);
 
             return new HomeResumoAgendamentoViewModel
@@ -130,12 +147,15 @@ namespace Navalha_Barbearia.Controllers
             };
         }
 
-        private HomeAgendamentoViewModel CriarHomeAgendamentoViewModel(AgendamentoModel? agendamentoBase = null)
+        private HomeAgendamentoViewModel CriarHomeAgendamentoViewModel(AgendamentoModel? agendamentoBase = null, DateTime? dataSelecionada = null)
         {
             // A Home apresenta o formulario inicial sem acoplar regra de negocio de envio.
             var barbeiros = _barbeiroService.ObterTodos()
                 .Where(x => x.TipoAcesso is TipoAcessoEnum.Administrador or TipoAcessoEnum.Funcionario)
                 .ToList();
+
+            var dataBase = dataSelecionada?.Date
+                ?? (agendamentoBase?.DataHora.Date != default ? agendamentoBase.DataHora.Date : DateTime.Today.AddDays(1));
 
             var barbeiroPadrao = barbeiros.FirstOrDefault() ?? new BarbeiroModel();
             var procedimentoPadrao = barbeiroPadrao.Procedimentos.FirstOrDefault()?.ProcedimentoEnum ?? ProcedimentoEnum.Corte;
@@ -155,11 +175,18 @@ namespace Navalha_Barbearia.Controllers
                 }
             }
 
+            var barbeiroSelecionadoId = agendamentoBase?.Barbeiro.Id > 0
+                ? agendamentoBase.Barbeiro.Id
+                : barbeiroPadrao.Id;
+
+            var slotsDisponiveis = barbeiroSelecionadoId > 0
+                ? _slotHorarioService.ObterSlotsDisponiveis(barbeiroSelecionadoId, dataBase)
+                : [];
+
             return new HomeAgendamentoViewModel
             {
                 Agendamento = agendamentoBase ?? new AgendamentoModel
                 {
-                    DataHora = DateTime.Now.AddDays(1),
                     StatusAgendamentoEnum = StatusAgendamentoEnum.Pendente,
                     Barbeiro = barbeiroPadrao,
                     Cliente = new ClienteModel(),
@@ -167,6 +194,8 @@ namespace Navalha_Barbearia.Controllers
                     Preco = precoPadrao
                 },
                 Barbeiros = barbeiros,
+                DataSelecionada = dataBase,
+                SlotsDisponiveis = slotsDisponiveis,
                 PrecosPorBarbeiroProcedimento = mapaPrecos
             };
         }
@@ -288,6 +317,27 @@ namespace Navalha_Barbearia.Controllers
                 cpf = cliente.CPF,
                 telefone = cliente.Telefone
             });
+        }
+
+        [HttpGet]
+        public IActionResult BuscarSlotsDisponiveis(int barbeiroId, DateTime data)
+        {
+            if (barbeiroId <= 0)
+            {
+                return Json(new List<object>());
+            }
+
+            var slots = _slotHorarioService.ObterSlotsDisponiveis(barbeiroId, data.Date)
+                .Select(x => new
+                {
+                    id = x.Id,
+                    inicio = x.Inicio,
+                    inicioFormatado = x.Inicio.ToString("HH:mm"),
+                    fimFormatado = x.Fim.ToString("HH:mm")
+                })
+                .ToList();
+
+            return Json(slots);
         }
 
         [HttpPost]

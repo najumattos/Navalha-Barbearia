@@ -9,12 +9,18 @@ namespace Navalha_Barbearia.Controllers
     public class ClientesController : Controller
     {
         private readonly IClienteService _clienteService;
+        private readonly IAgendamentoService _agendamentoService;
         private readonly IBarbeiroService _barbeiroService;
         private readonly IUsuarioContextoService _usuarioContextoService;
 
-        public ClientesController(IClienteService clienteService, IBarbeiroService barbeiroService, IUsuarioContextoService usuarioContextoService)
+        public ClientesController(
+            IClienteService clienteService,
+            IAgendamentoService agendamentoService,
+            IBarbeiroService barbeiroService,
+            IUsuarioContextoService usuarioContextoService)
         {
             _clienteService = clienteService;
+            _agendamentoService = agendamentoService;
             _barbeiroService = barbeiroService;
             _usuarioContextoService = usuarioContextoService;
         }
@@ -90,8 +96,6 @@ namespace Navalha_Barbearia.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            ViewBag.PodeDesativar = tipoAcesso.Value == TipoAcessoEnum.Administrador;
-
             ClienteModel? cliente;
             if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
             {
@@ -114,7 +118,19 @@ namespace Navalha_Barbearia.Controllers
                 return Forbid();
             }
 
-            return cliente is null ? NotFound() : View(cliente);
+            if (cliente is null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new ClienteDetalhesViewModel
+            {
+                Cliente = cliente,
+                HistoricoAgendamentos = _agendamentoService.ObterHistoricoPorCpfParaEquipe(cliente.CPF, tipoAcesso.Value),
+                PodeDesativar = tipoAcesso.Value == TipoAcessoEnum.Administrador
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult Create()

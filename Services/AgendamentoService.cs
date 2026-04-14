@@ -11,17 +11,23 @@ namespace Navalha_Barbearia.Services
         private readonly IBarbeiroRepository _barbeiroRepository;
         private readonly IProcedimentoRepository _procedimentoRepository;
         private readonly IClienteRepository _clienteRepository;
+        private readonly ISlotHorarioService _slotHorarioService;
+        private readonly IAgendamentoValidacaoService _agendamentoValidacaoService;
 
         public AgendamentoService(
             IAgendamentoRepository agendamentoRepository,
             IBarbeiroRepository barbeiroRepository,
             IProcedimentoRepository procedimentoRepository,
-            IClienteRepository clienteRepository)
+            IClienteRepository clienteRepository,
+            ISlotHorarioService slotHorarioService,
+            IAgendamentoValidacaoService agendamentoValidacaoService)
         {
             _agendamentoRepository = agendamentoRepository;
             _barbeiroRepository = barbeiroRepository;
             _procedimentoRepository = procedimentoRepository;
             _clienteRepository = clienteRepository;
+            _slotHorarioService = slotHorarioService;
+            _agendamentoValidacaoService = agendamentoValidacaoService;
         }
 
         public List<AgendamentoModel> ObterTodosParaAdministrador(TipoAcessoEnum tipoAcessoSolicitante)
@@ -56,6 +62,16 @@ namespace Navalha_Barbearia.Services
             return _agendamentoRepository.ObterPorCpfCliente(cpf);
         }
 
+        public List<AgendamentoModel> ObterHistoricoPorCpfParaEquipe(string cpf, TipoAcessoEnum tipoAcessoSolicitante)
+        {
+            ValidarFuncionarioOuAdministrador(tipoAcessoSolicitante);
+
+            // A tela de detalhes do cliente precisa mostrar o historico completo, independente do barbeiro que atendeu.
+            return _agendamentoRepository.ObterPorCpfCliente(cpf)
+                .OrderByDescending(x => x.DataHora)
+                .ToList();
+        }
+
         public AgendamentoModel? ObterPorId(int idAgendamento, int barbeiroIdSolicitante, TipoAcessoEnum tipoAcessoSolicitante)
         {
             ValidarFuncionarioOuAdministrador(tipoAcessoSolicitante);
@@ -80,6 +96,9 @@ namespace Navalha_Barbearia.Services
             agendamento.StatusAgendamentoEnum = Enum.IsDefined(agendamento.StatusAgendamentoEnum)
                 ? agendamento.StatusAgendamentoEnum
                 : StatusAgendamentoEnum.Pendente;
+
+            var slotValidado = _agendamentoValidacaoService.ValidarCriacaoComSlotLivre(agendamento);
+            agendamento.DataHora = slotValidado.Inicio;
 
             // Regra de negocio centralizada no service:
             // o preco final do agendamento precisa seguir o PrecoPorBarbeiro do profissional selecionado.
@@ -119,7 +138,10 @@ namespace Navalha_Barbearia.Services
             agendamento.Barbeiro = barbeiro;
             agendamento.Cliente = cliente;
 
-            return _agendamentoRepository.Adicionar(agendamento);
+            var agendamentoCriado = _agendamentoRepository.Adicionar(agendamento);
+            _slotHorarioService.OcuparSlot(slotValidado.Id);
+
+            return agendamentoCriado;
         }
 
         public AgendamentoModel AtualizarDoFuncionario(int idAgendamento, int barbeiroIdSolicitante, AgendamentoModel agendamento, TipoAcessoEnum tipoAcessoSolicitante)

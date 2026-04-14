@@ -9,6 +9,7 @@ namespace Navalha_Barbearia.Controllers
     public class AgendamentosController : Controller
     {
         private readonly IAgendamentoService _agendamentoService;
+        private readonly ISlotHorarioService _slotHorarioService;
         private readonly IBarbeiroService _barbeiroService;
         private readonly IClienteService _clienteService;
         private readonly IProcedimentoService _procedimentoService;
@@ -16,12 +17,14 @@ namespace Navalha_Barbearia.Controllers
 
         public AgendamentosController(
             IAgendamentoService agendamentoService,
+            ISlotHorarioService slotHorarioService,
             IBarbeiroService barbeiroService,
             IClienteService clienteService,
             IProcedimentoService procedimentoService,
             IUsuarioContextoService usuarioContextoService)
         {
             _agendamentoService = agendamentoService;
+            _slotHorarioService = slotHorarioService;
             _barbeiroService = barbeiroService;
             _clienteService = clienteService;
             _procedimentoService = procedimentoService;
@@ -82,7 +85,7 @@ namespace Navalha_Barbearia.Controllers
                 return Forbid();
             }
 
-            var viewModel = ObterViewModelParaCreate(new AgendamentoModel(), tipoAcesso.Value);
+            var viewModel = ObterViewModelParaCreate(new AgendamentoModel(), tipoAcesso.Value, DateTime.Today.AddDays(1));
             return View(viewModel);
         }
 
@@ -117,11 +120,40 @@ namespace Navalha_Barbearia.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(ObterViewModelParaCreate(viewModel.Agendamento, tipoAcesso.Value));
+                return View(ObterViewModelParaCreate(viewModel.Agendamento, tipoAcesso.Value, viewModel.DataSelecionada));
             }
 
-            _agendamentoService.Criar(viewModel.Agendamento);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _agendamentoService.Criar(viewModel.Agendamento);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException or InvalidOperationException)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(ObterViewModelParaCreate(viewModel.Agendamento, tipoAcesso.Value, viewModel.DataSelecionada));
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ObterSlotsDisponiveis(int barbeiroId, DateTime data)
+        {
+            if (barbeiroId <= 0)
+            {
+                return Json(new List<object>());
+            }
+
+            var slots = _slotHorarioService.ObterSlotsDisponiveis(barbeiroId, data.Date)
+                .Select(x => new
+                {
+                    id = x.Id,
+                    inicio = x.Inicio,
+                    inicioFormatado = x.Inicio.ToString("HH:mm"),
+                    fimFormatado = x.Fim.ToString("HH:mm")
+                })
+                .ToList();
+
+            return Json(slots);
         }
 
         public IActionResult Edit(int id)
@@ -231,7 +263,7 @@ namespace Navalha_Barbearia.Controllers
             };
         }
 
-        private AgendamentoCrudViewModel ObterViewModelParaCreate(AgendamentoModel agendamento, TipoAcessoEnum tipoAcesso)
+        private AgendamentoCrudViewModel ObterViewModelParaCreate(AgendamentoModel agendamento, TipoAcessoEnum tipoAcesso, DateTime dataSelecionada)
         {
             var procedimentos = _procedimentoService.ObterTodos();
             List<BarbeiroModel> barbeiros;
@@ -270,6 +302,15 @@ namespace Navalha_Barbearia.Controllers
 
             ViewBag.PodeEscolherBarbeiro = tipoAcesso == TipoAcessoEnum.Administrador;
 
+            var dataBase = dataSelecionada.Date;
+            var barbeiroSelecionadoId = agendamento.Barbeiro?.Id > 0
+                ? agendamento.Barbeiro.Id
+                : barbeiros.FirstOrDefault()?.Id ?? 0;
+
+            var slotsDisponiveis = barbeiroSelecionadoId > 0
+                ? _slotHorarioService.ObterSlotsDisponiveis(barbeiroSelecionadoId, dataBase)
+                : [];
+
             return new AgendamentoCrudViewModel
             {
                 Agendamento = agendamento,
@@ -277,6 +318,8 @@ namespace Navalha_Barbearia.Controllers
                 Barbeiros = barbeiros,
                 Clientes = clientes,
                 Procedimentos = procedimentos,
+                DataSelecionada = dataBase,
+                SlotsDisponiveis = slotsDisponiveis,
                 PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(
                     x => x.Id,
                     x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro))

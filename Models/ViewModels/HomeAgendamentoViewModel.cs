@@ -15,5 +15,9 @@ namespace Navalha_Barbearia.Models.ViewModels
 
         // Controle de UX: indica se o CPF informado encontrou um cliente ativo.
         public bool ClienteEncontradoPorCpf { get; set; }
+
+        public DateTime DataSelecionada { get; set; } = DateTime.Today.AddDays(1);
+
+        public List<SlotHorarioModel> SlotsDisponiveis { get; set; } = new();
     }
 }
