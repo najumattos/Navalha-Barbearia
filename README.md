@@ -59,18 +59,20 @@ O projeto segue arquitetura em camadas:
 - RN-12: No fluxo publico da home(Agendamento rapido), ao confirmar agendamento, status vira AguardandoConfirmacaoBarbeiro.
 - RN-13: Status de agendamento so pode ser alterado por perfis autorizados, respeitando o escopo do registro.
 - RN-14: Funcionario pode excluir apenas os proprios agendamentos.
+- RN-15: Data do agendamento nao pode ser anterior a data atual; validacao centralizada no service impede criacao de agendamentos retroativos.
+- RN-24: Quando faltar 30 minutos ou menos para o horario do agendamento, o status transiciona automaticamente de Agendado para AguardandoConfirmacaoCliente; validacao ocorre sempre que agendamentos sao retornados do service.
 
 ### RN de procedimentos e precificacao
-- RN-15: Catalogo de procedimentos usa PrecoBase como referencia.
-- RN-16: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
-- RN-17: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que realizam o procedimento.
-- RN-18: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
-- RN-19: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro.
+- RN-16: Catalogo de procedimentos usa PrecoBase como referencia.
+- RN-17: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
+- RN-18: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que realizam o procedimento.
+- RN-19: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
+- RN-20: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro.
 
 ### RN de experiencia no fluxo publico
-- RN-20: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
-- RN-21: O Agendamento Rápido na Home calcula e exibe preco dinamico por barbeiro e procedimento selecionado.
-- RN-22: Resumo de agendamento exibe um recibo com informações do usuario, do agendamento e o historico recente do cliente.
+- RN-21: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
+- RN-22: O Agendamento Rápido na Home calcula e exibe preco dinamico por barbeiro e procedimento selecionado.
+- RN-23: Resumo de agendamento exibe um recibo com informações do usuario, do agendamento e o historico recente do cliente.
 
 ## Stakeholders (Partes Interessadas)
 

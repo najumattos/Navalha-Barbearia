@@ -39,7 +39,15 @@ namespace Navalha_Barbearia.Services
             }
 
             // O service concentra a regra e deixa o repository apenas com persistencia simples.
-            return _agendamentoRepository.ObterTodos();
+            var agendamentos = _agendamentoRepository.ObterTodos();
+            
+            // Aplica transicao automatica de status para agendamentos proximos (faltam 30 min).
+            foreach (var agendamento in agendamentos)
+            {
+                AplicarTransicaoDeStatusAutomatica(agendamento);
+            }
+            
+            return agendamentos;
         }
 
         public List<AgendamentoModel> ObterPorBarbeiroId(int barbeiroId, TipoAcessoEnum tipoAcessoSolicitante)
@@ -47,9 +55,17 @@ namespace Navalha_Barbearia.Services
             ValidarFuncionarioOuAdministrador(tipoAcessoSolicitante);
 
             // O barbeiro acessa apenas o proprio conjunto de agendamentos.
-            return tipoAcessoSolicitante == TipoAcessoEnum.Administrador
+            var agendamentos = tipoAcessoSolicitante == TipoAcessoEnum.Administrador
                 ? _agendamentoRepository.ObterTodos()
                 : _agendamentoRepository.ObterPorBarbeiroId(barbeiroId);
+            
+            // Aplica transicao automatica de status para agendamentos proximos (faltam 30 min).
+            foreach (var agendamento in agendamentos)
+            {
+                AplicarTransicaoDeStatusAutomatica(agendamento);
+            }
+            
+            return agendamentos;
         }
 
         public List<AgendamentoModel> ObterPorCpfCliente(string cpf, TipoAcessoEnum tipoAcessoSolicitante)
@@ -59,7 +75,15 @@ namespace Navalha_Barbearia.Services
                 throw new UnauthorizedAccessException("Somente Cliente pode visualizar agendamentos por CPF na area de cliente.");
             }
 
-            return _agendamentoRepository.ObterPorCpfCliente(cpf);
+            var agendamentos = _agendamentoRepository.ObterPorCpfCliente(cpf);
+            
+            // Aplica transicao automatica de status para agendamentos proximos (faltam 30 min).
+            foreach (var agendamento in agendamentos)
+            {
+                AplicarTransicaoDeStatusAutomatica(agendamento);
+            }
+            
+            return agendamentos;
         }
 
         public List<AgendamentoModel> ObterHistoricoPorCpfParaEquipe(string cpf, TipoAcessoEnum tipoAcessoSolicitante)
@@ -67,9 +91,17 @@ namespace Navalha_Barbearia.Services
             ValidarFuncionarioOuAdministrador(tipoAcessoSolicitante);
 
             // A tela de detalhes do cliente precisa mostrar o historico completo, independente do barbeiro que atendeu.
-            return _agendamentoRepository.ObterPorCpfCliente(cpf)
+            var agendamentos = _agendamentoRepository.ObterPorCpfCliente(cpf)
                 .OrderByDescending(x => x.DataHora)
                 .ToList();
+            
+            // Aplica transicao automatica de status para agendamentos proximos (faltam 30 min).
+            foreach (var agendamento in agendamentos)
+            {
+                AplicarTransicaoDeStatusAutomatica(agendamento);
+            }
+            
+            return agendamentos;
         }
 
         public AgendamentoModel? ObterPorId(int idAgendamento, int barbeiroIdSolicitante, TipoAcessoEnum tipoAcessoSolicitante)
@@ -86,6 +118,9 @@ namespace Navalha_Barbearia.Services
             {
                 throw new UnauthorizedAccessException("Funcionario pode visualizar apenas os proprios agendamentos.");
             }
+
+            // Aplica transicao automatica de status para agendamentos proximos (faltam 30 min).
+            AplicarTransicaoDeStatusAutomatica(agendamento);
 
             return agendamento;
         }
@@ -239,6 +274,30 @@ namespace Navalha_Barbearia.Services
             }
 
             _agendamentoRepository.Excluir(idAgendamento);
+        }
+
+        /// <summary>
+        /// Verifica se o agendamento esta proximo ao seu horario (faltam 30 minutos ou menos).
+        /// Se estiver com status Agendado, transiciona para AguardandoConfirmacaoCliente.
+        /// Centraliza a logica de reconfirmacao para melhorar a experiencia do cliente antes do atendimento.
+        /// </summary>
+        private void AplicarTransicaoDeStatusAutomatica(AgendamentoModel agendamento)
+        {
+            // Guard clause: apenas agendamentos com status "Agendado" sao candidatos a transicao.
+            if (agendamento.StatusAgendamentoEnum != StatusAgendamentoEnum.Agendado)
+            {
+                return;
+            }
+
+            // Calcula o tempo restante ate o horario do agendamento.
+            var tempoRestante = agendamento.DataHora - DateTime.Now;
+            
+            // Se faltam 30 minutos ou menos, transiciona para AguardandoConfirmacaoCliente.
+            if (tempoRestante <= TimeSpan.FromMinutes(30))
+            {
+                agendamento.StatusAgendamentoEnum = StatusAgendamentoEnum.AguardandoConfirmacaoCliente;
+                _agendamentoRepository.Atualizar(agendamento);
+            }
         }
 
         private static void ValidarFuncionarioOuAdministrador(TipoAcessoEnum tipoAcessoSolicitante)
