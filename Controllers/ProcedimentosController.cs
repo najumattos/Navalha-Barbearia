@@ -22,35 +22,110 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Index()
         {
             var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
-            if (tipoAcesso == TipoAcessoEnum.Funcionario)
+            var exibirColunasFuncionario = tipoAcesso == TipoAcessoEnum.Funcionario;
+            var vinculosFuncionario = new Dictionary<int, VinculoProcedimentoFuncionarioViewModel>();
+
+            if (exibirColunasFuncionario)
             {
                 var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
-                if (!idBarbeiro.HasValue)
+                if (idBarbeiro.HasValue)
                 {
-                    return RedirectToAction("Login", "Auth");
+                    var barbeiro = _barbeiroService.ObterPorId(idBarbeiro.Value);
+                    if (barbeiro is not null)
+                    {
+                        vinculosFuncionario = barbeiro.RelacoesProcedimentos
+                            .GroupBy(x => x.ProcedimentoId)
+                            .ToDictionary(
+                                x => x.Key,
+                                x =>
+                                {
+                                    var vinculoAtivo = x.FirstOrDefault(v => v.Ativo);
+                                    var vinculoMaisRecente = x.OrderByDescending(v => v.AtualizadoEm).First();
+                                    return new VinculoProcedimentoFuncionarioViewModel
+                                    {
+                                        PrecoPorBarbeiro = vinculoAtivo?.PrecoPorBarbeiro ?? vinculoMaisRecente.PrecoPorBarbeiro,
+                                        Ativo = vinculoAtivo?.Ativo ?? vinculoMaisRecente.Ativo
+                                    };
+                                });
+                    }
                 }
-
-                var barbeiro = _barbeiroService.ObterPorId(idBarbeiro.Value);
-                if (barbeiro is null)
-                {
-                    return NotFound();
-                }
-
-                return View(new ProcedimentoCrudViewModel
-                {
-                    Procedimentos = barbeiro.Procedimentos
-                });
             }
 
             return View(new ProcedimentoCrudViewModel
             {
-                Procedimentos = _procedimentoService.ObterTodos()
+                Procedimentos = _procedimentoService.ObterTodos(),
+                PodeGerenciarCatalogo = tipoAcesso == TipoAcessoEnum.Administrador,
+                ExibirColunasFuncionario = exibirColunasFuncionario,
+                VinculosFuncionarioPorProcedimentoId = vinculosFuncionario
             });
         }
 
-        public IActionResult Details(ProcedimentoEnum procedimentoEnum)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AtualizarAtivoFuncionario(int procedimentoId, bool ativo)
         {
-            var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso != TipoAcessoEnum.Funcionario)
+            {
+                return Forbid();
+            }
+
+            var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+            if (!idBarbeiro.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            try
+            {
+                if (ativo)
+                {
+                    _barbeiroService.AdicionarProcedimentoAoBarbeiro(idBarbeiro.Value, procedimentoId, TipoAcessoEnum.Funcionario);
+                }
+                else
+                {
+                    _barbeiroService.RemoverProcedimentoDoBarbeiro(idBarbeiro.Value, procedimentoId, TipoAcessoEnum.Funcionario);
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+                // Mantemos fluxo silencioso para nao interromper a experiencia da tela de listagem.
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AtualizarPrecoPorBarbeiroFuncionario(int procedimentoId, decimal precoPorBarbeiro)
+        {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso != TipoAcessoEnum.Funcionario)
+            {
+                return Forbid();
+            }
+
+            var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+            if (!idBarbeiro.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            try
+            {
+                _barbeiroService.AtualizarPrecoPorBarbeiro(idBarbeiro.Value, procedimentoId, precoPorBarbeiro, TipoAcessoEnum.Funcionario);
+            }
+            catch (KeyNotFoundException)
+            {
+                // Mantemos fluxo silencioso para nao interromper a experiencia da tela de listagem.
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Details(int id)
+        {
+            var procedimento = _procedimentoService.ObterPorId(id);
             if (procedimento is null)
             {
                 return NotFound();
@@ -67,7 +142,7 @@ namespace Navalha_Barbearia.Controllers
                         BarbeiroId = barbeiro.Id,
                         NomeBarbeiro = barbeiro.NomeCompleto,
                         PrecoPorBarbeiro = barbeiro.Procedimentos
-                            .FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum)
+                            .FirstOrDefault(x => x.Id == id)
                             ?.PrecoPorBarbeiro ?? procedimento.PrecoBase
                     })
                     .OrderBy(x => x.NomeBarbeiro)
@@ -76,7 +151,8 @@ namespace Navalha_Barbearia.Controllers
 
             var viewModel = new ProcedimentoDetalhesViewModel
             {
-                ProcedimentoEnum = procedimento.ProcedimentoEnum,
+                Id = procedimento.Id,
+                Nome = procedimento.Nome,
                 Descricao = procedimento.Descricao,
                 PrecoBase = procedimento.PrecoBase,
                 PodeVisualizarPrecosPorBarbeiro = ehAdministrador,
@@ -116,7 +192,7 @@ namespace Navalha_Barbearia.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Edit(ProcedimentoEnum? procedimentoEnum)
+        public IActionResult Edit(int id)
         {
             var validacaoAdmin = ValidarAcessoAdministrador();
             if (validacaoAdmin is not null)
@@ -124,37 +200,8 @@ namespace Navalha_Barbearia.Controllers
                 return validacaoAdmin;
             }
 
-            // Mantemos um unico ponto de preparacao da tela para seguir DRY e facilitar manutencao.
-            var procedimentoSelecionado = procedimentoEnum ?? _procedimentoService.ObterTodos().Select(x => x.ProcedimentoEnum).FirstOrDefault();
-            var procedimento = _procedimentoService.ObterPorTipo(procedimentoSelecionado);
-
-            ViewBag.TiposProcedimento = Enum.GetValues<ProcedimentoEnum>();
+            var procedimento = _procedimentoService.ObterPorId(id);
             return procedimento is null ? NotFound() : View(procedimento);
-        }
-
-        [HttpGet]
-        public IActionResult BuscarPorTipo(ProcedimentoEnum procedimentoEnum)
-        {
-            var validacaoAdmin = ValidarAcessoAdministrador();
-            if (validacaoAdmin is not null)
-            {
-                return validacaoAdmin;
-            }
-
-            var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
-            if (procedimento is null)
-            {
-                return Json(new { encontrado = false });
-            }
-
-            // Endpoint de leitura simples para auto preenchimento na UI, sem duplicar regra de negocio.
-            return Json(new
-            {
-                encontrado = true,
-                procedimentoEnum = (int)procedimento.ProcedimentoEnum,
-                descricao = procedimento.Descricao,
-                precoBase = procedimento.PrecoBase
-            });
         }
 
         [HttpPost]
@@ -169,15 +216,14 @@ namespace Navalha_Barbearia.Controllers
 
             if (!ModelState.IsValid)
             {
-                ViewBag.TiposProcedimento = Enum.GetValues<ProcedimentoEnum>();
                 return View(procedimento);
             }
 
-            _procedimentoService.AtualizarCatalogo(procedimento.ProcedimentoEnum, procedimento, TipoAcessoEnum.Administrador);
+            _procedimentoService.AtualizarCatalogo(procedimento.Id, procedimento, TipoAcessoEnum.Administrador);
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(ProcedimentoEnum procedimentoEnum)
+        public IActionResult Delete(int id)
         {
             var validacaoAdmin = ValidarAcessoAdministrador();
             if (validacaoAdmin is not null)
@@ -185,13 +231,13 @@ namespace Navalha_Barbearia.Controllers
                 return validacaoAdmin;
             }
 
-            var procedimento = _procedimentoService.ObterPorTipo(procedimentoEnum);
+            var procedimento = _procedimentoService.ObterPorId(id);
             return procedimento is null ? NotFound() : View(procedimento);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(ProcedimentoEnum procedimentoEnum)
+        public IActionResult DeleteConfirmed(int id)
         {
             var validacaoAdmin = ValidarAcessoAdministrador();
             if (validacaoAdmin is not null)
@@ -199,7 +245,7 @@ namespace Navalha_Barbearia.Controllers
                 return validacaoAdmin;
             }
 
-            _procedimentoService.Excluir(procedimentoEnum, TipoAcessoEnum.Administrador);
+            _procedimentoService.Excluir(id, TipoAcessoEnum.Administrador);
             return RedirectToAction(nameof(Index));
         }
 

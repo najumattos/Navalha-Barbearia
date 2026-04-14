@@ -44,7 +44,7 @@ O projeto segue arquitetura em camadas:
 - RN-01: Somente Administrador pode visualizar todos os agendamentos.
 - RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao seu proprio Id.
 - RN-03: Cliente visualiza os proprios agendamentos pelo proprio CPF.
-- RN-04: Somente Administrador cria, edita e exclui procedimentos do catalogo
+- RN-04: Qualquer usuario pode visualizar o catalogo de procedimentos; somente Administrador cria, edita e exclui procedimentos do catalogo. O cadastro usa `Id` e `Nome` no lugar de um enum de procedimento.
 
 ### RN de clientes
 - RN-05: Todo cliente cadastrado recebe TipoAcesso = Cliente.
@@ -67,7 +67,11 @@ O projeto segue arquitetura em camadas:
 - RN-17: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
 - RN-18: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que realizam o procedimento.
 - RN-19: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
-- RN-20: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro.
+- RN-20: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro pelo painel do funcionario, sem alterar o cadastro do procedimento.
+- RN-25: A relacao Barbeiro x Procedimento esta em transicao para N:N explicito com entidade de vinculo (`BarbeiroProcedimentoModel`), mantendo sincronizacao com a lista legada de `Procedimentos` para compatibilidade das telas atuais.
+- RN-26: Leitura de preco por barbeiro prioriza a relacao N:N (`RelacoesProcedimentos` ativas) e usa fallback para a estrutura legada quando necessario.
+- RN-27: A listagem de procedimentos do funcionario exibe `PrecoPorBarbeiro` e o status `Ativo` de cada vinculo.
+- RN-28: O campo `Ativo` da listagem de procedimentos do funcionario e controlado por toggle-switch, ativando ou inativando o vinculo com o procedimento em tempo real.
 
 ### RN de experiencia no fluxo publico
 - RN-21: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
@@ -137,11 +141,11 @@ O projeto segue arquitetura em camadas:
 
 ### UC-09 - Gerenciar procedimentos do catalogo
 - Ator: Administrador.
-- Fluxo principal: criar, editar e excluir procedimento com propagacao para dados relacionados.
+- Fluxo principal: criar, editar e excluir procedimento com propagacao para dados relacionados. A consulta do catalogo e liberada para qualquer usuario autenticado ou nao autenticado.
 
 ### UC-10 - Personalizar preco por barbeiro
 - Ator: Funcionario.
-- Fluxo principal: ajustar o PrecoPorBarbeiro para procedimento vinculado ao proprio perfil.
+- Fluxo principal: ajustar o PrecoPorBarbeiro para procedimento vinculado ao proprio perfil, sem alterar descricao nem PrecoBase.
 
 ### UC-11 - Gerenciar barbeiros
 - Ator: Administrador.

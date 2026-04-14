@@ -59,7 +59,7 @@
                     <option value="">Selecione</option>
                     @foreach (var procedimento in Model.Procedimentos)
                     {
-                        <option value="@((int)procedimento.ProcedimentoEnum)">@procedimento.ProcedimentoEnum</option>
+                        <option value="@procedimento.Id">@procedimento.Nome</option>
                     }
                 </select>
             </div>

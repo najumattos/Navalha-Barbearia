@@ -155,15 +155,15 @@ namespace Navalha_Barbearia.Services
             var barbeiro = _barbeiroRepository.ObterPorId(barbeiroId.Value)
                 ?? throw new KeyNotFoundException($"Barbeiro {barbeiroId.Value} nao encontrado.");
 
-            var procedimentoDoBarbeiro = barbeiro.Procedimentos.FirstOrDefault(x => x.ProcedimentoEnum == agendamento.Procedimento);
-            if (procedimentoDoBarbeiro is not null)
+            var precoDoBarbeiro = ObterPrecoDoBarbeiro(barbeiro, (int)agendamento.Procedimento);
+            if (precoDoBarbeiro.HasValue)
             {
-                agendamento.Preco = procedimentoDoBarbeiro.PrecoPorBarbeiro;
+                agendamento.Preco = precoDoBarbeiro.Value;
             }
             else
             {
                 // Fallback seguro: usa preco base do catalogo quando o barbeiro ainda nao tiver o procedimento na lista.
-                var procedimentoCatalogo = _procedimentoRepository.ObterPorTipo(agendamento.Procedimento)
+                var procedimentoCatalogo = _procedimentoRepository.ObterPorId((int)agendamento.Procedimento)
                     ?? throw new KeyNotFoundException($"Procedimento {agendamento.Procedimento} nao encontrado no catalogo.");
 
                 agendamento.Preco = procedimentoCatalogo.PrecoBase;
@@ -177,6 +177,20 @@ namespace Navalha_Barbearia.Services
             _slotHorarioService.OcuparSlot(slotValidado.Id);
 
             return agendamentoCriado;
+        }
+
+        private static decimal? ObterPrecoDoBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
+        {
+            var relacaoAtiva = barbeiro.RelacoesProcedimentos
+                .FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo);
+
+            if (relacaoAtiva is not null)
+            {
+                return relacaoAtiva.PrecoPorBarbeiro;
+            }
+
+            var procedimentoLegado = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == procedimentoId);
+            return procedimentoLegado?.PrecoPorBarbeiro;
         }
 
         public AgendamentoModel AtualizarDoFuncionario(int idAgendamento, int barbeiroIdSolicitante, AgendamentoModel agendamento, TipoAcessoEnum tipoAcessoSolicitante)

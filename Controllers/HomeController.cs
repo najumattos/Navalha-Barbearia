@@ -13,6 +13,7 @@ namespace Navalha_Barbearia.Controllers
         private readonly IBarbeiroService _barbeiroService;
         private readonly IClienteService _clienteService;
         private readonly IAgendamentoService _agendamentoService;
+        private readonly IProcedimentoService _procedimentoService;
         private readonly ISlotHorarioService _slotHorarioService;
         private readonly ILoginService _loginService;
         private readonly IUsuarioContextoService _usuarioContextoService;
@@ -22,6 +23,7 @@ namespace Navalha_Barbearia.Controllers
             IBarbeiroService barbeiroService,
             IClienteService clienteService,
             IAgendamentoService agendamentoService,
+            IProcedimentoService procedimentoService,
             ISlotHorarioService slotHorarioService,
             ILoginService loginService,
             IUsuarioContextoService usuarioContextoService)
@@ -30,6 +32,7 @@ namespace Navalha_Barbearia.Controllers
             _barbeiroService = barbeiroService;
             _clienteService = clienteService;
             _agendamentoService = agendamentoService;
+            _procedimentoService = procedimentoService;
             _slotHorarioService = slotHorarioService;
             _loginService = loginService;
             _usuarioContextoService = usuarioContextoService;
@@ -136,7 +139,7 @@ namespace Navalha_Barbearia.Controllers
             agendamentoAtual.Barbeiro = barbeiro;
             agendamentoAtual.Cliente = cliente;
             agendamentoAtual.DataHora = slotSelecionado.Inicio;
-            agendamentoAtual.Preco = ObterPrecoPorBarbeiro(barbeiro, agendamentoAtual.Procedimento);
+            agendamentoAtual.Preco = ObterPrecoPorBarbeiro(barbeiro, (int)agendamentoAtual.Procedimento);
 
             return new HomeResumoAgendamentoViewModel
             {
@@ -155,15 +158,16 @@ namespace Navalha_Barbearia.Controllers
                 .ToList();
 
             var dataBase = dataSelecionada?.Date
-                ?? (agendamentoBase?.DataHora.Date != default ? agendamentoBase.DataHora.Date : DateTime.Today.AddDays(1));
+                ?? (agendamentoBase is not null && agendamentoBase.DataHora.Date != default
+                    ? agendamentoBase.DataHora.Date
+                    : DateTime.Today.AddDays(1));
 
             var barbeiroPadrao = barbeiros.FirstOrDefault() ?? new BarbeiroModel();
-            var procedimentoPadrao = barbeiroPadrao.Procedimentos.FirstOrDefault()?.ProcedimentoEnum ?? ProcedimentoEnum.Corte;
-            var precoPadrao = ObterPrecoPorBarbeiro(barbeiroPadrao, procedimentoPadrao);
+            var procedimentoPadraoId = ObterProcedimentoPadraoId(barbeiroPadrao);
+            var procedimentoPadrao = (ProcedimentoEnum)procedimentoPadraoId;
+            var precoPadrao = ObterPrecoPorBarbeiro(barbeiroPadrao, procedimentoPadraoId);
 
-            var mapaPrecos = barbeiros.ToDictionary(
-                x => x.Id,
-                x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro));
+            var mapaPrecos = barbeiros.ToDictionary(x => x.Id, MontarMapaPrecosPorProcedimento);
 
             if (agendamentoBase is not null && agendamentoBase.Barbeiro.Id > 0)
             {
@@ -171,7 +175,7 @@ namespace Navalha_Barbearia.Controllers
                 if (barbeiroSelecionado is not null)
                 {
                     agendamentoBase.Barbeiro = barbeiroSelecionado;
-                    agendamentoBase.Preco = ObterPrecoPorBarbeiro(barbeiroSelecionado, agendamentoBase.Procedimento);
+                    agendamentoBase.Preco = ObterPrecoPorBarbeiro(barbeiroSelecionado, (int)agendamentoBase.Procedimento);
                 }
             }
 
@@ -194,17 +198,61 @@ namespace Navalha_Barbearia.Controllers
                     Preco = precoPadrao
                 },
                 Barbeiros = barbeiros,
+                Procedimentos = _procedimentoService.ObterTodos(),
                 DataSelecionada = dataBase,
                 SlotsDisponiveis = slotsDisponiveis,
                 PrecosPorBarbeiroProcedimento = mapaPrecos
             };
         }
 
-        private static decimal ObterPrecoPorBarbeiro(BarbeiroModel barbeiro, ProcedimentoEnum procedimento)
+        private static decimal ObterPrecoPorBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
         {
-            // Encapsular a regra em metodo privado melhora legibilidade e facilita manutencao.
-            var procedimentoDoBarbeiro = barbeiro.Procedimentos.FirstOrDefault(x => x.ProcedimentoEnum == procedimento);
+            // Prioriza a nova relacao N:N; fallback preserva compatibilidade com estrutura legada.
+            var relacaoAtiva = barbeiro.RelacoesProcedimentos
+                .FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo);
+
+            if (relacaoAtiva is not null)
+            {
+                return relacaoAtiva.PrecoPorBarbeiro;
+            }
+
+            var procedimentoDoBarbeiro = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == procedimentoId);
             return procedimentoDoBarbeiro?.PrecoPorBarbeiro ?? 0m;
+        }
+
+        private static int ObterProcedimentoPadraoId(BarbeiroModel barbeiro)
+        {
+            var procedimentoIdDaRelacao = barbeiro.RelacoesProcedimentos
+                .Where(x => x.Ativo)
+                .Select(x => x.ProcedimentoId)
+                .FirstOrDefault();
+
+            if (procedimentoIdDaRelacao > 0)
+            {
+                return procedimentoIdDaRelacao;
+            }
+
+            return barbeiro.Procedimentos.FirstOrDefault()?.Id ?? 1;
+        }
+
+        private static Dictionary<int, decimal> MontarMapaPrecosPorProcedimento(BarbeiroModel barbeiro)
+        {
+            var mapa = new Dictionary<int, decimal>();
+
+            foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
+            {
+                mapa[relacao.ProcedimentoId] = relacao.PrecoPorBarbeiro;
+            }
+
+            foreach (var procedimento in barbeiro.Procedimentos)
+            {
+                if (!mapa.ContainsKey(procedimento.Id))
+                {
+                    mapa[procedimento.Id] = procedimento.PrecoPorBarbeiro;
+                }
+            }
+
+            return mapa;
         }
 
         public IActionResult Privacy()
@@ -262,16 +310,39 @@ namespace Navalha_Barbearia.Controllers
                 return NotFound();
             }
 
-            var vm = new HomeFuncionarioViewModel
-            {
-                IdBarbeiro = funcionario.Id,
-                NomeFuncionario = funcionario.NomeCompleto,
-                Procedimentos = funcionario.Procedimentos,
-                Agendamentos = _agendamentoService.ObterPorBarbeiroId(idBarbeiroResolvido.Value, TipoAcessoEnum.Funcionario),
-                Clientes = _clienteService.ObterPorBarbeiro(idBarbeiroResolvido.Value, TipoAcessoEnum.Funcionario)
-            };
+            return View(CriarHomeFuncionarioViewModel(funcionario.Id));
+        }
 
-            return View(vm);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AtualizarPrecoPorBarbeiroFuncionario(int procedimentoId, decimal precoPorBarbeiro)
+        {
+            var idBarbeiro = _usuarioContextoService.ObterIdBarbeiro();
+            if (!idBarbeiro.HasValue)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var login = _loginService.ObterPorBarbeiroId(idBarbeiro.Value);
+            if (login?.TipoAcessoEnum != TipoAcessoEnum.Funcionario)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                _barbeiroService.AtualizarPrecoPorBarbeiro(idBarbeiro.Value, procedimentoId, precoPorBarbeiro, TipoAcessoEnum.Funcionario);
+                return RedirectToAction(nameof(HomeFuncionario), new { idBarbeiro = idBarbeiro.Value });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(nameof(HomeFuncionario), CriarHomeFuncionarioViewModel(idBarbeiro.Value));
+            }
         }
 
         [HttpGet]
@@ -398,6 +469,70 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private HomeFuncionarioViewModel CriarHomeFuncionarioViewModel(int idBarbeiro)
+        {
+            var funcionario = _barbeiroService.ObterPorId(idBarbeiro)
+                ?? throw new KeyNotFoundException("Barbeiro nao encontrado para montar o painel do funcionario.");
+
+            var procedimentosDoBarbeiro = MontarProcedimentosDoBarbeiro(funcionario);
+
+            return new HomeFuncionarioViewModel
+            {
+                IdBarbeiro = funcionario.Id,
+                NomeFuncionario = funcionario.NomeCompleto,
+                ProcedimentosDoBarbeiro = procedimentosDoBarbeiro,
+                Agendamentos = _agendamentoService.ObterPorBarbeiroId(idBarbeiro, TipoAcessoEnum.Funcionario),
+                Clientes = _clienteService.ObterPorBarbeiro(idBarbeiro, TipoAcessoEnum.Funcionario)
+            };
+        }
+
+        private List<ProcedimentoDoBarbeiroViewModel> MontarProcedimentosDoBarbeiro(BarbeiroModel barbeiro)
+        {
+            var catalogo = _procedimentoService.ObterTodos().ToDictionary(x => x.Id, x => x);
+            var procedimentos = new List<ProcedimentoDoBarbeiroViewModel>();
+
+            foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
+            {
+                catalogo.TryGetValue(relacao.ProcedimentoId, out var procedimentoCatalogo);
+                var procedimentoLegado = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == relacao.ProcedimentoId);
+
+                if (procedimentoCatalogo is null && procedimentoLegado is null)
+                {
+                    continue;
+                }
+
+                procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
+                {
+                    Id = relacao.ProcedimentoId,
+                    Nome = procedimentoCatalogo?.Nome ?? procedimentoLegado?.Nome ?? string.Empty,
+                    Descricao = procedimentoCatalogo?.Descricao ?? procedimentoLegado?.Descricao ?? string.Empty,
+                    PrecoBase = procedimentoCatalogo?.PrecoBase ?? procedimentoLegado?.PrecoBase ?? 0m,
+                    PrecoPorBarbeiro = relacao.PrecoPorBarbeiro,
+                    Ativo = relacao.Ativo
+                });
+            }
+
+            foreach (var procedimentoLegado in barbeiro.Procedimentos)
+            {
+                if (procedimentos.Any(x => x.Id == procedimentoLegado.Id))
+                {
+                    continue;
+                }
+
+                procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
+                {
+                    Id = procedimentoLegado.Id,
+                    Nome = procedimentoLegado.Nome,
+                    Descricao = procedimentoLegado.Descricao,
+                    PrecoBase = procedimentoLegado.PrecoBase,
+                    PrecoPorBarbeiro = procedimentoLegado.PrecoPorBarbeiro,
+                    Ativo = true
+                });
+            }
+
+            return procedimentos.OrderBy(x => x.Nome).ToList();
         }
     }
 }

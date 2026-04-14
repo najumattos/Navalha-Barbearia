@@ -1,29 +1,22 @@
 @model Navalha_Barbearia.Models.ProcedimentoModel
-@using Navalha_Barbearia.Enums
 
 @{
     ViewData["Title"] = "Editar procedimento";
-    var tiposProcedimento = ViewBag.TiposProcedimento as ProcedimentoEnum[] ?? Enum.GetValues<ProcedimentoEnum>();
 }
 
 <div class="container py-4">
     <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
         <span class="eyebrow">Atualizacao de catalogo</span>
         <h1 class="h3 mt-3 mb-4">Editar procedimento</h1>
-        <p class="text-muted mb-4">Selecione um tipo para carregar os dados atuais e atualizar descricao e preco base.</p>
+        <p class="text-muted mb-4">Atualize o nome, a descricao e o preco base do procedimento selecionado.</p>
 
         <form asp-action="Edit" method="post" class="row g-3">
             @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
 
             <div class="col-md-6">
-                <label asp-for="ProcedimentoEnum" class="form-label">Tipo</label>
-                <select asp-for="ProcedimentoEnum" class="form-select" id="procedimento-select">
-                    @foreach (var tipo in tiposProcedimento)
-                    {
-                        <option value="@((int)tipo)">@tipo</option>
-                    }
-                </select>
-                <small class="text-muted">Boas praticas: fonte unica da verdade no backend e auto preenchimento no frontend para evitar duplicacao.</small>
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
             </div>
 
             <div class="col-md-6">
@@ -36,10 +29,6 @@
                 <textarea asp-for="Descricao" class="form-control" rows="4" id="descricao"></textarea>
             </div>
 
-            <div class="col-12">
-                <small class="text-muted" id="mensagem-carregamento"></small>
-            </div>
-
             <div class="col-12 d-flex gap-2 pt-2">
                 <button type="submit" class="btn btn-dark">Salvar</button>
                 <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
@@ -47,56 +36,3 @@
         </form>
     </div>
 </div>
-
-<script>
-    (function () {
-        const procedimentoSelect = document.getElementById("procedimento-select");
-        const descricaoInput = document.getElementById("descricao");
-        const precoBaseInput = document.getElementById("preco-base");
-        const mensagem = document.getElementById("mensagem-carregamento");
-
-        if (!procedimentoSelect || !descricaoInput || !precoBaseInput || !mensagem) {
-            return;
-        }
-
-        // Clean Code: funcao com responsabilidade unica para manter comportamento previsivel.
-        async function carregarDadosDoProcedimento() {
-            const tipoSelecionado = procedimentoSelect.value;
-            if (!tipoSelecionado) {
-                descricaoInput.value = "";
-                precoBaseInput.value = "";
-                mensagem.textContent = "Selecione um tipo para carregar os dados.";
-                return;
-            }
-
-            mensagem.textContent = "Carregando dados do procedimento...";
-
-            try {
-                const resposta = await fetch(`/Procedimentos/BuscarPorTipo?procedimentoEnum=${encodeURIComponent(tipoSelecionado)}`);
-                if (!resposta.ok) {
-                    mensagem.textContent = "Nao foi possivel carregar os dados agora.";
-                    return;
-                }
-
-                const resultado = await resposta.json();
-                if (!resultado.encontrado) {
-                    descricaoInput.value = "";
-                    precoBaseInput.value = "";
-                    mensagem.textContent = "Procedimento nao encontrado no catalogo.";
-                    return;
-                }
-
-                descricaoInput.value = resultado.descricao || "";
-                precoBaseInput.value = Number(resultado.precoBase || 0).toFixed(2);
-                mensagem.textContent = "Dados carregados. Revise e clique em Salvar para aplicar no catalogo.";
-            } catch {
-                mensagem.textContent = "Erro de comunicacao com o servidor. Tente novamente.";
-            }
-        }
-
-        procedimentoSelect.addEventListener("change", carregarDadosDoProcedimento);
-
-        // Carregamento inicial: facilita uso quando a tela abre com um tipo pre-selecionado.
-        carregarDadosDoProcedimento();
-    })();
-</script>

@@ -1,4 +1,5 @@
 @model Navalha_Barbearia.Models.ViewModels.ProcedimentoCrudViewModel
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Procedimentos";
@@ -10,6 +11,10 @@
             <span class="eyebrow">Catalogo</span>
             <h1 class="h3 mt-2 mb-0">Procedimentos</h1>
         </div>
+        @if (Model.PodeGerenciarCatalogo)
+        {
+            <a class="btn btn-dark" asp-action="Create">Novo procedimento</a>
+        }
     </div>
 
     <div class="card-soft p-3 p-md-4">
@@ -17,22 +22,78 @@
             <table class="table align-middle">
                 <thead>
                     <tr>
-                        <th>Tipo</th>
+                        <th>Id</th>
+                        <th>Nome</th>
                         <th>Descricao</th>
                         <th>Preco base</th>
+                        @if (Model.ExibirColunasFuncionario)
+                        {
+                            <th>Preco por barbeiro</th>
+                            <th>Ativo</th>
+                        }
                         <th class="text-end">Acoes</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var procedimento in Model.Procedimentos)
                     {
+                        var possuiVinculo = Model.VinculosFuncionarioPorProcedimentoId.TryGetValue(procedimento.Id, out var vinculoFuncionario);
+
                         <tr>
-                            <td>@procedimento.ProcedimentoEnum</td>
+                            <td>@procedimento.Id</td>
+                            <td>@procedimento.Nome</td>
                             <td>@procedimento.Descricao</td>
                             <td>@procedimento.PrecoBase.ToString("C")</td>
+                            @if (Model.ExibirColunasFuncionario)
+                            {
+                                var formAtivoId = $"ativo-form-{procedimento.Id}";
+                                var switchId = $"ativo-switch-{procedimento.Id}";
+                                var formPrecoId = $"preco-form-{procedimento.Id}";
+                                var ativoAtual = possuiVinculo && vinculoFuncionario?.Ativo == true;
+                                <td>
+                                    @if (ativoAtual)
+                                    {
+                                        <form id="@formPrecoId" asp-action="AtualizarPrecoPorBarbeiroFuncionario" method="post" class="m-0 d-inline-flex align-items-center gap-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="procedimentoId" value="@procedimento.Id" />
+                                            <input type="number"
+                                                   name="precoPorBarbeiro"
+                                                   class="form-control form-control-sm"
+                                                   style="max-width: 120px;"
+                                                   step="0.01"
+                                                   min="0"
+                                                   value="@(vinculoFuncionario?.PrecoPorBarbeiro?.ToString("0.00", CultureInfo.InvariantCulture) ?? "0.00")" />
+                                            <button type="submit" class="btn btn-outline-dark btn-sm">Salvar</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <form id="@formAtivoId" asp-action="AtualizarAtivoFuncionario" method="post" class="m-0 d-inline-flex align-items-center gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="procedimentoId" value="@procedimento.Id" />
+                                        <input type="hidden" name="ativo" value="@ativoAtual.ToString().ToLowerInvariant()" />
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   role="switch"
+                                                   id="@switchId"
+                                                   @(ativoAtual ? "checked" : null)
+                                                   onchange="(function(s){var f=s.closest('form');f.querySelector('input[name=ativo]').value=s.checked;f.submit();})(this)" />
+                                            <label class="form-check-label small ms-1" for="@switchId">@(ativoAtual ? "Ativo" : "Inativo")</label>
+                                        </div>
+                                    </form>
+                                </td>
+                            }
                             <td class="text-end">
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Details" asp-route-procedimentoEnum="@procedimento.ProcedimentoEnum">Detalhes</a>
-                                <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-procedimentoEnum="@procedimento.ProcedimentoEnum">Editar</a>
+                                @if (Model.PodeGerenciarCatalogo)
+                                {
+                                    <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@procedimento.Id">Editar</a>
+                                    <a class="btn btn-outline-danger btn-sm" asp-action="Delete" asp-route-id="@procedimento.Id">Excluir</a>
+                                }
                             </td>
                         </tr>
                     }

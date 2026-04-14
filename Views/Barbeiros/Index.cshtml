@@ -35,7 +35,7 @@
                             <td>@barbeiro.NomeCompleto</td>
                             <td>@barbeiro.Telefone</td>
                             <td>@barbeiro.TipoAcesso</td>
-                            <td>@barbeiro.Procedimentos.Count</td>
+                            <td>@barbeiro.RelacoesProcedimentos.Count(x => x.Ativo)</td>
                             <td>@barbeiro.Clientes.Count</td>
                             <td class="text-end">
                                 <a class="btn btn-outline-dark btn-sm" asp-action="Edit" asp-route-id="@barbeiro.Id">Editar</a>

@@ -71,10 +71,10 @@
                             <label asp-for="Agendamento.Procedimento" class="form-label">Procedimento</label>
                             <select asp-for="Agendamento.Procedimento" class="form-select" id="procedimento-select">
                                 <option value="">Selecione</option>
-                                <option value="1">Corte</option>
-                                <option value="2">Barba</option>
-                                <option value="3">Sobrancelha</option>
-                                <option value="4">Pedicure</option>
+                                @foreach (var procedimento in Model.Procedimentos)
+                                {
+                                    <option value="@procedimento.Id">@procedimento.Nome</option>
+                                }
                             </select>
                         </div>
 

@@ -11,8 +11,10 @@
         <p class="text-muted">Informacoes do item de catalogo selecionado.</p>
 
         <dl class="row mb-0">
-            <dt class="col-sm-4">Tipo</dt>
-            <dd class="col-sm-8">@Model.ProcedimentoEnum</dd>
+            <dt class="col-sm-4">Id</dt>
+            <dd class="col-sm-8">@Model.Id</dd>
+            <dt class="col-sm-4">Nome</dt>
+            <dd class="col-sm-8">@Model.Nome</dd>
             <dt class="col-sm-4">Descricao</dt>
             <dd class="col-sm-8">@Model.Descricao</dd>
             <dt class="col-sm-4">Preco base</dt>
@@ -47,7 +49,7 @@
         }
 
         <div class="d-flex gap-2 pt-4">
-            <a class="btn btn-dark" asp-action="Edit" asp-route-procedimentoEnum="@Model.ProcedimentoEnum">Editar</a>
+            <a class="btn btn-dark" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
             <a class="btn btn-outline-dark" asp-action="Index">Voltar</a>
         </div>
     </div>

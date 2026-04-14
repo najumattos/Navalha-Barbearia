@@ -9,7 +9,9 @@ namespace Navalha_Barbearia.Models.ViewModels
 
         public List<BarbeiroModel> Barbeiros { get; set; } = new();
 
-        // Mapa auxiliar para a tela: [IdBarbeiro] -> [ProcedimentoEnum] -> PrecoPorBarbeiro.
+        public List<ProcedimentoModel> Procedimentos { get; set; } = new();
+
+        // Mapa auxiliar para a tela: [IdBarbeiro] -> [ProcedimentoId] -> PrecoPorBarbeiro.
         // Boa pratica: manter esse dado no ViewModel evita consulta extra e deixa a UI previsivel.
         public Dictionary<int, Dictionary<int, decimal>> PrecosPorBarbeiroProcedimento { get; set; } = new();
 

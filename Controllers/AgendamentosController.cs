@@ -257,9 +257,7 @@ namespace Navalha_Barbearia.Controllers
                 Barbeiros = barbeiros,
                 Clientes = clientes,
                 Procedimentos = procedimentos,
-                PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(
-                    x => x.Id,
-                    x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro))
+                PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(x => x.Id, MontarMapaPrecosPorProcedimento)
             };
         }
 
@@ -320,10 +318,28 @@ namespace Navalha_Barbearia.Controllers
                 Procedimentos = procedimentos,
                 DataSelecionada = dataBase,
                 SlotsDisponiveis = slotsDisponiveis,
-                PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(
-                    x => x.Id,
-                    x => x.Procedimentos.ToDictionary(p => (int)p.ProcedimentoEnum, p => p.PrecoPorBarbeiro))
+                PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(x => x.Id, MontarMapaPrecosPorProcedimento)
             };
+        }
+
+        private static Dictionary<int, decimal> MontarMapaPrecosPorProcedimento(BarbeiroModel barbeiro)
+        {
+            var mapa = new Dictionary<int, decimal>();
+
+            foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
+            {
+                mapa[relacao.ProcedimentoId] = relacao.PrecoPorBarbeiro;
+            }
+
+            foreach (var procedimento in barbeiro.Procedimentos)
+            {
+                if (!mapa.ContainsKey(procedimento.Id))
+                {
+                    mapa[procedimento.Id] = procedimento.PrecoPorBarbeiro;
+                }
+            }
+
+            return mapa;
         }
     }
 }

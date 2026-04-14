@@ -4,7 +4,9 @@ namespace Navalha_Barbearia.Models.ViewModels
 {
     public class ProcedimentoDetalhesViewModel
     {
-        public ProcedimentoEnum ProcedimentoEnum { get; set; }
+        public int Id { get; set; }
+
+        public string Nome { get; set; } = string.Empty;
 
         public string Descricao { get; set; } = string.Empty;
 

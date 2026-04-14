@@ -10,13 +10,15 @@ namespace Navalha_Barbearia.Repositories
         [
             new ProcedimentoModel
             {
-                ProcedimentoEnum = ProcedimentoEnum.Corte,
+                Id = 1,
+                Nome = "Corte",
                 Descricao = "Corte tradicional com acabamento na navalha.",
                 PrecoBase = 45.00m
             },
             new ProcedimentoModel
             {
-                ProcedimentoEnum = ProcedimentoEnum.Barba,
+                Id = 2,
+                Nome = "Barba",
                 Descricao = "Modelagem completa da barba com toalha quente.",
                 PrecoBase = 35.00m
             }
@@ -27,14 +29,21 @@ namespace Navalha_Barbearia.Repositories
             return _procedimentoLista;
         }
 
-        public ProcedimentoModel? ObterPorTipo(ProcedimentoEnum procedimentoEnum)
+        public ProcedimentoModel? ObterPorId(int id)
         {
-            return _procedimentoLista.FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum);
+            return _procedimentoLista.FirstOrDefault(x => x.Id == id);
         }
 
         public ProcedimentoModel Adicionar(ProcedimentoModel procedimento)
         {
-            _procedimentoLista.RemoveAll(x => x.ProcedimentoEnum == procedimento.ProcedimentoEnum);
+            if (procedimento.Id <= 0)
+            {
+                procedimento.Id = _procedimentoLista.Count == 0 ? 1 : _procedimentoLista.Max(x => x.Id) + 1;
+            }
+            else
+            {
+                _procedimentoLista.RemoveAll(x => x.Id == procedimento.Id);
+            }
 
             _procedimentoLista.Add(procedimento);
             return procedimento;
@@ -45,12 +54,12 @@ namespace Navalha_Barbearia.Repositories
             return Adicionar(procedimento);
         }
 
-        public void Excluir(ProcedimentoEnum procedimentoEnum)
+        public void Excluir(int id)
         {
-            var removidos = _procedimentoLista.RemoveAll(x => x.ProcedimentoEnum == procedimentoEnum);
+            var removidos = _procedimentoLista.RemoveAll(x => x.Id == id);
             if (removidos == 0)
             {
-                throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao encontrado.");
+                throw new KeyNotFoundException($"Procedimento {id} nao encontrado.");
             }
         }
 

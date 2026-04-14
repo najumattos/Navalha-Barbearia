@@ -11,15 +11,17 @@
         <p class="text-muted">Esta acao remove o item do catalogo usado pela aplicacao.</p>
 
         <dl class="row mb-0">
-            <dt class="col-sm-4">Tipo</dt>
-            <dd class="col-sm-8">@Model.ProcedimentoEnum</dd>
+            <dt class="col-sm-4">Id</dt>
+            <dd class="col-sm-8">@Model.Id</dd>
+            <dt class="col-sm-4">Nome</dt>
+            <dd class="col-sm-8">@Model.Nome</dd>
             <dt class="col-sm-4">Descricao</dt>
             <dd class="col-sm-8">@Model.Descricao</dd>
         </dl>
 
         <form asp-action="Delete" method="post" class="d-flex gap-2 pt-4">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="ProcedimentoEnum" />
+            <input type="hidden" asp-for="Id" />
             <button type="submit" class="btn btn-danger">Excluir</button>
             <a class="btn btn-outline-dark" asp-action="Index">Cancelar</a>
         </form>

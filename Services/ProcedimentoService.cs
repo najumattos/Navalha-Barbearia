@@ -21,9 +21,9 @@ namespace Navalha_Barbearia.Services
             return _procedimentoRepository.ObterTodos();
         }
 
-        public ProcedimentoModel? ObterPorTipo(ProcedimentoEnum procedimentoEnum)
+        public ProcedimentoModel? ObterPorId(int id)
         {
-            return _procedimentoRepository.ObterPorTipo(procedimentoEnum);
+            return _procedimentoRepository.ObterPorId(id);
         }
 
         public ProcedimentoModel Criar(ProcedimentoModel procedimento, TipoAcessoEnum tipoAcessoSolicitante)
@@ -36,43 +36,45 @@ namespace Navalha_Barbearia.Services
             return _procedimentoRepository.Adicionar(procedimento);
         }
 
-        public ProcedimentoModel AtualizarCatalogo(ProcedimentoEnum procedimentoEnum, ProcedimentoModel procedimentoAtualizado, TipoAcessoEnum tipoAcessoSolicitante)
+        public ProcedimentoModel AtualizarCatalogo(int id, ProcedimentoModel procedimentoAtualizado, TipoAcessoEnum tipoAcessoSolicitante)
         {
             if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
             {
                 throw new UnauthorizedAccessException("Somente Administrador pode atualizar descricao e preco base.");
             }
 
-            var procedimentoCatalogo = _procedimentoRepository.ObterPorTipo(procedimentoEnum)
-                ?? throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao encontrado.");
+            var procedimentoCatalogo = _procedimentoRepository.ObterPorId(id)
+                ?? throw new KeyNotFoundException($"Procedimento {id} nao encontrado.");
 
+            procedimentoCatalogo.Nome = procedimentoAtualizado.Nome;
             procedimentoCatalogo.Descricao = procedimentoAtualizado.Descricao;
             procedimentoCatalogo.PrecoBase = procedimentoAtualizado.PrecoBase;
 
             foreach (var barbeiro in _barbeiroRepository.ObterTodos())
             {
-                foreach (var procedimentoDoBarbeiro in barbeiro.Procedimentos.Where(x => x.ProcedimentoEnum == procedimentoEnum))
+                foreach (var procedimentoDoBarbeiro in barbeiro.Procedimentos.Where(x => x.Id == id))
                 {
+                    procedimentoDoBarbeiro.Nome = procedimentoCatalogo.Nome;
                     procedimentoDoBarbeiro.Descricao = procedimentoCatalogo.Descricao;
                     procedimentoDoBarbeiro.PrecoBase = procedimentoCatalogo.PrecoBase;
                 }
             }
 
-            return _procedimentoRepository.Adicionar(procedimentoCatalogo);
+            return _procedimentoRepository.Atualizar(procedimentoCatalogo);
         }
 
-        public void Excluir(ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante)
+        public void Excluir(int id, TipoAcessoEnum tipoAcessoSolicitante)
         {
             if (tipoAcessoSolicitante != TipoAcessoEnum.Administrador)
             {
                 throw new UnauthorizedAccessException("Somente Administrador pode excluir procedimentos.");
             }
 
-            _procedimentoRepository.Excluir(procedimentoEnum);
+            _procedimentoRepository.Excluir(id);
 
             foreach (var barbeiro in _barbeiroRepository.ObterTodos())
             {
-                barbeiro.Procedimentos.RemoveAll(x => x.ProcedimentoEnum == procedimentoEnum);
+                barbeiro.Procedimentos.RemoveAll(x => x.Id == id);
             }
         }
     }

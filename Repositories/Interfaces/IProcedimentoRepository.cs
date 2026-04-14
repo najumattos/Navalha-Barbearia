@@ -6,9 +6,9 @@ namespace Navalha_Barbearia.Repositories.Interfaces
     public interface IProcedimentoRepository
     {
         List<ProcedimentoModel> ObterTodos();
-        ProcedimentoModel? ObterPorTipo(ProcedimentoEnum procedimentoEnum);
+        ProcedimentoModel? ObterPorId(int id);
         ProcedimentoModel Adicionar(ProcedimentoModel procedimento);
         ProcedimentoModel Atualizar(ProcedimentoModel procedimento);
-        void Excluir(ProcedimentoEnum procedimentoEnum);
+        void Excluir(int id);
     }
 }

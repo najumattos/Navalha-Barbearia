@@ -68,7 +68,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link @(controllerAtual == "Procedimentos" ? "active" : string.Empty)" asp-controller="Procedimentos" asp-action="Index">
-                                        <i class="bi bi-journal-text me-2"></i>Meus Procedimentos
+                                        <i class="bi bi-journal-text me-2"></i>Procedimentos
                                     </a>
                                 </li>
                             }
@@ -77,6 +77,11 @@
                                 <li class="nav-item">
                                     <a class="nav-link @(controllerAtual == "Agendamentos" ? "active" : string.Empty)" asp-controller="Agendamentos" asp-action="Index">
                                         <i class="bi bi-calendar-check me-2"></i>Meus Agendamentos
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(controllerAtual == "Procedimentos" ? "active" : string.Empty)" asp-controller="Procedimentos" asp-action="Index">
+                                        <i class="bi bi-journal-text me-2"></i>Procedimentos
                                     </a>
                                 </li>
                             }
