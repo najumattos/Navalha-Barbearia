@@ -346,31 +346,6 @@ namespace Navalha_Barbearia.Controllers
         }
 
         [HttpGet]
-        public IActionResult HomeCliente(int? idCliente)
-        {
-            var idClienteResolvido = idCliente ?? _usuarioContextoService.ObterIdCliente();
-            if (!idClienteResolvido.HasValue)
-            {
-                return RedirectToAction("Login", "Auth");
-            }
-
-            var login = _loginService.ObterPorClienteId(idClienteResolvido.Value);
-            if (login?.TipoAcessoEnum != TipoAcessoEnum.Cliente)
-            {
-                return Forbid();
-            }
-
-            var cliente = _clienteService.ObterPerfilCliente(idClienteResolvido.Value, TipoAcessoEnum.Cliente);
-            var agendamentos = _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente);
-
-            return View(new HomeClienteViewModel
-            {
-                Cliente = cliente,
-                Agendamentos = agendamentos
-            });
-        }
-
-        [HttpGet]
         public IActionResult BuscarClientePorCpf(string cpf)
         {
             // Endpoint publico de UX: auto preenche nome por CPF sem autenticar.
@@ -435,33 +410,6 @@ namespace Navalha_Barbearia.Controllers
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return RedirectToAction(nameof(HomeFuncionario), new { idBarbeiro });
-            }
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult AtualizarStatusAgendamentoCliente(int idCliente, int idAgendamento, StatusAgendamentoEnum status)
-        {
-            var login = _loginService.ObterPorClienteId(idCliente);
-            if (login?.TipoAcessoEnum != TipoAcessoEnum.Cliente)
-            {
-                return Forbid();
-            }
-
-            try
-            {
-                var cliente = _clienteService.ObterPerfilCliente(idCliente, TipoAcessoEnum.Cliente);
-                _agendamentoService.AtualizarStatusDoCliente(idAgendamento, cliente.CPF, status, TipoAcessoEnum.Cliente);
-                return RedirectToAction(nameof(HomeCliente), new { idCliente });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return RedirectToAction(nameof(HomeCliente), new { idCliente });
             }
         }
 

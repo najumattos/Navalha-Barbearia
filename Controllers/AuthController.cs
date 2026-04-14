@@ -52,12 +52,7 @@ namespace Navalha_Barbearia.Controllers
                 return RedirectToAction("HomeAdministrador", "Home", new { idBarbeiro = login.IdBarbeiro ?? 0 });
             }
 
-            if (login.TipoAcessoEnum == TipoAcessoEnum.Cliente)
-            {
-                return RedirectToAction("HomeCliente", "Home", new { idCliente = login.IdCliente ?? 0 });
-            }
-
-            ModelState.AddModelError(string.Empty, "Perfil sem area de navegacao configurada.");
+            ModelState.AddModelError(string.Empty, "Perfil nao tem permissao de acesso.");
             return View(loginRequest);
         }
 

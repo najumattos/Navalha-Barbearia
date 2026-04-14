@@ -1,3 +1,4 @@
+using Navalha_Barbearia.Enums;
 using Navalha_Barbearia.Models;
 using Navalha_Barbearia.Repositories.Interfaces;
 using Navalha_Barbearia.Services.Interfaces;
@@ -16,7 +17,16 @@ namespace Navalha_Barbearia.Services
         public LoginModel? Autenticar(string email, string senha)
         {
             // SRP: a validacao de credenciais fica centralizada no service de login.
-            return _loginRepository.ObterPorEmailSenha(email, senha);
+            var login = _loginRepository.ObterPorEmailSenha(email, senha);
+            
+            // Apenas Funcionario e Administrador tem acesso ao sistema.
+            // Clientes sao automaticamente rejeitados mesmo que credenciais estejam corretas.
+            if (login?.TipoAcessoEnum == TipoAcessoEnum.Cliente)
+            {
+                return null;
+            }
+            
+            return login;
         }
 
         public LoginModel? ObterPorBarbeiroId(int idBarbeiro)

@@ -7,6 +7,7 @@ namespace Navalha_Barbearia.Repositories
     public class LoginRepository : ILoginRepository
     {
         // Repositorio em memoria para simplificar o fluxo de autenticacao durante o desenvolvimento.
+        // Apenas Funcionario e Administrador tem acesso ao login; Clientes nao podem acessar o sistema.
         private static readonly List<LoginModel> _logins =
         [
             new LoginModel
@@ -26,24 +27,6 @@ namespace Navalha_Barbearia.Repositories
                 Email = "funcionario@navalha.com",
                 Senha = "123456",
                 TipoAcessoEnum = TipoAcessoEnum.Funcionario
-            },
-            new LoginModel
-            {
-                Id = 3,
-                IdBarbeiro = null,
-                IdCliente = 1,
-                Email = "ana@cliente.com",
-                Senha = "123456",
-                TipoAcessoEnum = TipoAcessoEnum.Cliente
-            },
-            new LoginModel
-            {
-                Id = 4,
-                IdBarbeiro = null,
-                IdCliente = 2,
-                Email = "bianca@cliente.com",
-                Senha = "123456",
-                TipoAcessoEnum = TipoAcessoEnum.Cliente
             }
         ];
 
