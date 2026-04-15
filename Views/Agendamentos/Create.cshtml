@@ -128,7 +128,42 @@
             precoInput.value = typeof preco === "number" ? preco.toFixed(2) : "";
         }
 
-        barbeiroSelect.addEventListener("change", atualizarPreco);
+        // Carrega procedimentos do barbeiro selecionado
+        async function carregarProcedimentos() {
+            const barbeiroId = barbeiroSelect.value;
+            const procedimentoSelecionado = procedimentoSelect.value;
+            procedimentoSelect.innerHTML = '<option value="">Selecione</option>';
+
+            if (!barbeiroId) {
+                atualizarPreco();
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/Agendamentos/BuscarProcedimentosPorBarbeiro?barbeiroId=${encodeURIComponent(barbeiroId)}`);
+                if (!resposta.ok) {
+                    return;
+                }
+
+                const procedimentos = await resposta.json();
+                for (const proc of procedimentos) {
+                    const option = document.createElement("option");
+                    option.value = proc.id;
+                    option.textContent = proc.nome;
+                    option.selected = String(proc.id) === String(procedimentoSelecionado);
+                    procedimentoSelect.appendChild(option);
+                }
+                // Dispara mudança de procedimento para atualizar preço
+                atualizarPreco();
+            } catch {
+                // Mantemos comportamento silencioso para não interromper o preenchimento do restante do formulário.
+            }
+        }
+
+        barbeiroSelect.addEventListener("change", () => {
+            carregarProcedimentos();
+            atualizarPreco();
+        });
         procedimentoSelect.addEventListener("change", atualizarPreco);
         atualizarPreco();
 

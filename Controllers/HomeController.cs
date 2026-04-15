@@ -9,6 +9,8 @@ namespace Navalha_Barbearia.Controllers
 {
     public class HomeController : Controller
     {
+        private const string ResumoAgendamentoViewPath = "~/Views/Agendamentos/ResumoAgendamento.cshtml";
+
         private readonly ILogger<HomeController> _logger;
         private readonly IBarbeiroService _barbeiroService;
         private readonly IClienteService _clienteService;
@@ -55,7 +57,7 @@ namespace Navalha_Barbearia.Controllers
             try
             {
                 var resumoViewModel = CriarResumoAgendamentoViewModel(viewModel.Agendamento, exibirBotaoConfirmar: true);
-                return View(nameof(ResumoAgendamento), resumoViewModel);
+                return View(ResumoAgendamentoViewPath, resumoViewModel);
             }
             catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException or InvalidOperationException)
             {
@@ -81,7 +83,7 @@ namespace Navalha_Barbearia.Controllers
                 ModelState.AddModelError(string.Empty, ex.Message);
 
                 var resumoViewModel = CriarResumoAgendamentoViewModel(viewModel.AgendamentoAtual, exibirBotaoConfirmar: true);
-                return View(nameof(ResumoAgendamento), resumoViewModel);
+                return View(ResumoAgendamentoViewPath, resumoViewModel);
             }
         }
 
@@ -101,7 +103,7 @@ namespace Navalha_Barbearia.Controllers
                 .Take(2)
                 .ToList();
 
-            return View(new HomeResumoAgendamentoViewModel
+            return View(ResumoAgendamentoViewPath, new HomeResumoAgendamentoViewModel
             {
                 Cliente = cliente,
                 AgendamentoAtual = agendamentoAtual,
@@ -135,6 +137,11 @@ namespace Navalha_Barbearia.Controllers
                 .OrderByDescending(x => x.DataHora)
                 .Take(2)
                 .ToList();
+
+            if (!ProcedimentoDisponivelParaBarbeiro(barbeiro, (int)agendamentoAtual.Procedimento))
+            {
+                throw new ArgumentException("O procedimento selecionado nao esta ativo para o barbeiro informado.");
+            }
 
             agendamentoAtual.Barbeiro = barbeiro;
             agendamentoAtual.Cliente = cliente;
@@ -183,6 +190,9 @@ namespace Navalha_Barbearia.Controllers
                 ? agendamentoBase.Barbeiro.Id
                 : barbeiroPadrao.Id;
 
+            var barbeiroSelecionadoParaTela = barbeiros.FirstOrDefault(x => x.Id == barbeiroSelecionadoId) ?? barbeiroPadrao;
+            var procedimentosDisponiveis = ObterProcedimentosDisponiveisDoBarbeiro(barbeiroSelecionadoParaTela);
+
             var slotsDisponiveis = barbeiroSelecionadoId > 0
                 ? _slotHorarioService.ObterSlotsDisponiveis(barbeiroSelecionadoId, dataBase)
                 : [];
@@ -198,7 +208,7 @@ namespace Navalha_Barbearia.Controllers
                     Preco = precoPadrao
                 },
                 Barbeiros = barbeiros,
-                Procedimentos = _procedimentoService.ObterTodos(),
+                Procedimentos = procedimentosDisponiveis,
                 DataSelecionada = dataBase,
                 SlotsDisponiveis = slotsDisponiveis,
                 PrecosPorBarbeiroProcedimento = mapaPrecos
@@ -208,6 +218,8 @@ namespace Navalha_Barbearia.Controllers
         private static decimal ObterPrecoPorBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
         {
             // Prioriza a nova relacao N:N; fallback preserva compatibilidade com estrutura legada.
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
             var relacaoAtiva = barbeiro.RelacoesProcedimentos
                 .FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo);
 
@@ -216,12 +228,19 @@ namespace Navalha_Barbearia.Controllers
                 return relacaoAtiva.PrecoPorBarbeiro;
             }
 
+            if (possuiRelacoes)
+            {
+                return 0m;
+            }
+
             var procedimentoDoBarbeiro = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == procedimentoId);
             return procedimentoDoBarbeiro?.PrecoPorBarbeiro ?? 0m;
         }
 
         private static int ObterProcedimentoPadraoId(BarbeiroModel barbeiro)
         {
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
             var procedimentoIdDaRelacao = barbeiro.RelacoesProcedimentos
                 .Where(x => x.Ativo)
                 .Select(x => x.ProcedimentoId)
@@ -232,6 +251,11 @@ namespace Navalha_Barbearia.Controllers
                 return procedimentoIdDaRelacao;
             }
 
+            if (possuiRelacoes)
+            {
+                return 0;
+            }
+
             return barbeiro.Procedimentos.FirstOrDefault()?.Id ?? 1;
         }
 
@@ -239,9 +263,16 @@ namespace Navalha_Barbearia.Controllers
         {
             var mapa = new Dictionary<int, decimal>();
 
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
             foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
             {
                 mapa[relacao.ProcedimentoId] = relacao.PrecoPorBarbeiro;
+            }
+
+            if (possuiRelacoes)
+            {
+                return mapa;
             }
 
             foreach (var procedimento in barbeiro.Procedimentos)
@@ -384,6 +415,73 @@ namespace Navalha_Barbearia.Controllers
                 .ToList();
 
             return Json(slots);
+        }
+
+        [HttpGet]
+        public IActionResult BuscarProcedimentosPorBarbeiro(int barbeiroId)
+        {
+            if (barbeiroId <= 0)
+            {
+                return Json(new List<object>());
+            }
+
+            var barbeiro = _barbeiroService.ObterPorId(barbeiroId);
+            if (barbeiro is null)
+            {
+                return Json(new List<object>());
+            }
+
+            var mapaPrecos = MontarMapaPrecosPorProcedimento(barbeiro);
+            var procedimentos = ObterProcedimentosDisponiveisDoBarbeiro(barbeiro)
+                .Select(procedimento => new
+                {
+                    id = procedimento.Id,
+                    nome = procedimento.Nome,
+                    precoPorBarbeiro = mapaPrecos.TryGetValue(procedimento.Id, out var preco) ? preco : procedimento.PrecoPorBarbeiro
+                })
+                .ToList();
+
+            return Json(procedimentos);
+        }
+
+        private List<ProcedimentoModel> ObterProcedimentosDisponiveisDoBarbeiro(BarbeiroModel barbeiro)
+        {
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
+            if (possuiRelacoes)
+            {
+                return barbeiro.RelacoesProcedimentos
+                    .Where(x => x.Ativo)
+                    .Select(x => _procedimentoService.ObterPorId(x.ProcedimentoId))
+                    .Where(x => x is not null)
+                    .Select(x => x!)
+                    .GroupBy(x => x.Id)
+                    .Select(x => x.First())
+                    .OrderBy(x => x.Nome)
+                    .ToList();
+            }
+
+            return barbeiro.Procedimentos
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
+                .OrderBy(x => x.Nome)
+                .ToList();
+        }
+
+        private static bool ProcedimentoDisponivelParaBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
+        {
+            if (procedimentoId <= 0)
+            {
+                return false;
+            }
+
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+            if (possuiRelacoes)
+            {
+                return barbeiro.RelacoesProcedimentos.Any(x => x.ProcedimentoId == procedimentoId && x.Ativo);
+            }
+
+            return barbeiro.Procedimentos.Any(x => x.Id == procedimentoId);
         }
 
         [HttpPost]

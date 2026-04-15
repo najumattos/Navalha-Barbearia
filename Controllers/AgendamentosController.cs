@@ -69,7 +69,13 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Details(int id)
         {
-            return RedirectToAction("ResumoAgendamento", "Home", new { idAgendamento = id });
+            return RedirectToAction(nameof(ResumoAgendamento), new { idAgendamento = id });
+        }
+
+        [HttpGet]
+        public IActionResult ResumoAgendamento(int idAgendamento)
+        {
+            return RedirectToAction(nameof(HomeController.ResumoAgendamento), "Home", new { idAgendamento });
         }
 
         public IActionResult Create()
@@ -154,6 +160,33 @@ namespace Navalha_Barbearia.Controllers
                 .ToList();
 
             return Json(slots);
+        }
+
+        [HttpGet]
+        public IActionResult BuscarProcedimentosPorBarbeiro(int barbeiroId)
+        {
+            if (barbeiroId <= 0)
+            {
+                return Json(new List<object>());
+            }
+
+            var barbeiro = _barbeiroService.ObterPorId(barbeiroId);
+            if (barbeiro is null)
+            {
+                return Json(new List<object>());
+            }
+
+            var mapaPrecos = MontarMapaPrecosPorProcedimento(barbeiro);
+            var procedimentos = ObterProcedimentosDisponiveisDoBarbeiro(barbeiro)
+                .Select(procedimento => new
+                {
+                    id = procedimento.Id,
+                    nome = procedimento.Nome,
+                    precoPorBarbeiro = mapaPrecos.TryGetValue(procedimento.Id, out var preco) ? preco : procedimento.PrecoPorBarbeiro
+                })
+                .ToList();
+
+            return Json(procedimentos);
         }
 
         public IActionResult Edit(int id)
@@ -263,7 +296,6 @@ namespace Navalha_Barbearia.Controllers
 
         private AgendamentoCrudViewModel ObterViewModelParaCreate(AgendamentoModel agendamento, TipoAcessoEnum tipoAcesso, DateTime dataSelecionada)
         {
-            var procedimentos = _procedimentoService.ObterTodos();
             List<BarbeiroModel> barbeiros;
             List<ClienteModel> clientes;
 
@@ -305,6 +337,11 @@ namespace Navalha_Barbearia.Controllers
                 ? agendamento.Barbeiro.Id
                 : barbeiros.FirstOrDefault()?.Id ?? 0;
 
+            var barbeiroSelecionado = barbeiros.FirstOrDefault(x => x.Id == barbeiroSelecionadoId);
+            var procedimentos = barbeiroSelecionado is not null
+                ? ObterProcedimentosDisponiveisDoBarbeiro(barbeiroSelecionado)
+                : new List<ProcedimentoModel>();
+
             var slotsDisponiveis = barbeiroSelecionadoId > 0
                 ? _slotHorarioService.ObterSlotsDisponiveis(barbeiroSelecionadoId, dataBase)
                 : [];
@@ -326,9 +363,16 @@ namespace Navalha_Barbearia.Controllers
         {
             var mapa = new Dictionary<int, decimal>();
 
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
             foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
             {
                 mapa[relacao.ProcedimentoId] = relacao.PrecoPorBarbeiro;
+            }
+
+            if (possuiRelacoes)
+            {
+                return mapa;
             }
 
             foreach (var procedimento in barbeiro.Procedimentos)
@@ -340,6 +384,30 @@ namespace Navalha_Barbearia.Controllers
             }
 
             return mapa;
+        }
+
+        private List<ProcedimentoModel> ObterProcedimentosDisponiveisDoBarbeiro(BarbeiroModel barbeiro)
+        {
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
+            if (possuiRelacoes)
+            {
+                return barbeiro.RelacoesProcedimentos
+                    .Where(x => x.Ativo)
+                    .Select(x => _procedimentoService.ObterPorId(x.ProcedimentoId))
+                    .Where(x => x is not null)
+                    .Select(x => x!)
+                    .GroupBy(x => x.Id)
+                    .Select(x => x.First())
+                    .OrderBy(x => x.Nome)
+                    .ToList();
+            }
+
+            return barbeiro.Procedimentos
+                .GroupBy(x => x.Id)
+                .Select(x => x.First())
+                .OrderBy(x => x.Nome)
+                .ToList();
         }
     }
 }

@@ -79,6 +79,8 @@ O projeto segue arquitetura em camadas:
 - RN-21: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
 - RN-22: O Agendamento Rápido na Home calcula e exibe preco dinamico por barbeiro e procedimento selecionado.
 - RN-23: Resumo de agendamento exibe um recibo com informações do usuario, do agendamento e o historico recente do cliente.
+- RN-30: O fluxo de detalhes/resumo de agendamento foi unificado na view `Views/Agendamentos/ResumoAgendamento.cshtml`; o acesso por `Agendamentos/Details` e pela listagem aponta para o mesmo resumo.
+- RN-31: Em qualquer tela de criacao de agendamento, a lista de procedimentos deve mostrar apenas os procedimentos ativos vinculados ao barbeiro selecionado; validacao da regra tambem ocorre no service.
 
 ## Stakeholders (Partes Interessadas)
 

@@ -155,7 +155,13 @@ namespace Navalha_Barbearia.Services
             var barbeiro = _barbeiroRepository.ObterPorId(barbeiroId.Value)
                 ?? throw new KeyNotFoundException($"Barbeiro {barbeiroId.Value} nao encontrado.");
 
-            var precoDoBarbeiro = ObterPrecoDoBarbeiro(barbeiro, (int)agendamento.Procedimento);
+            var procedimentoId = (int)agendamento.Procedimento;
+            if (!ProcedimentoEstaDisponivelParaBarbeiro(barbeiro, procedimentoId))
+            {
+                throw new InvalidOperationException("O procedimento selecionado nao esta ativo para o barbeiro informado.");
+            }
+
+            var precoDoBarbeiro = ObterPrecoDoBarbeiro(barbeiro, procedimentoId);
             if (precoDoBarbeiro.HasValue)
             {
                 agendamento.Preco = precoDoBarbeiro.Value;
@@ -181,6 +187,8 @@ namespace Navalha_Barbearia.Services
 
         private static decimal? ObterPrecoDoBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
         {
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+
             var relacaoAtiva = barbeiro.RelacoesProcedimentos
                 .FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo);
 
@@ -189,8 +197,29 @@ namespace Navalha_Barbearia.Services
                 return relacaoAtiva.PrecoPorBarbeiro;
             }
 
+            if (possuiRelacoes)
+            {
+                return null;
+            }
+
             var procedimentoLegado = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == procedimentoId);
             return procedimentoLegado?.PrecoPorBarbeiro;
+        }
+
+        private static bool ProcedimentoEstaDisponivelParaBarbeiro(BarbeiroModel barbeiro, int procedimentoId)
+        {
+            if (procedimentoId <= 0)
+            {
+                return false;
+            }
+
+            var possuiRelacoes = barbeiro.RelacoesProcedimentos.Any();
+            if (possuiRelacoes)
+            {
+                return barbeiro.RelacoesProcedimentos.Any(x => x.ProcedimentoId == procedimentoId && x.Ativo);
+            }
+
+            return barbeiro.Procedimentos.Any(x => x.Id == procedimentoId);
         }
 
         public AgendamentoModel AtualizarDoFuncionario(int idAgendamento, int barbeiroIdSolicitante, AgendamentoModel agendamento, TipoAcessoEnum tipoAcessoSolicitante)
