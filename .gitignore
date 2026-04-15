@@ -1,0 +1,21 @@
+# Build artifacts
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE folders
+.vs/
+.vscode/
+
+# Logs
+*.log
+
+# ASP.NET Core static web assets cache
+*.dswa.cache.json
+*.staticwebassets.build.json.cache
+*.build.ex.cache
