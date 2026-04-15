@@ -1,0 +1,168 @@
+@model Navalha_Barbearia.Models.ViewModels.HomeResumoAgendamentoViewModel
+
+@{
+    ViewData["Title"] = "Resumo do Agendamento";
+    Layout = "_LayoutPublic";
+}
+
+<style>
+    .receipt-page {
+        max-width: 760px;
+    }
+
+    .receipt {
+        background: #fff;
+        border: 1px solid #d7d7d7;
+        color: #1f1f1f;
+    }
+
+    .receipt-title {
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        font-size: .9rem;
+        color: #666;
+    }
+
+    .receipt-section {
+        border-top: 1px dashed #bdbdbd;
+    }
+
+    .receipt-label {
+        color: #6b6b6b;
+        font-size: .85rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .receipt-value {
+        font-size: .98rem;
+    }
+
+    .receipt-list {
+        border-top: 1px dashed #bdbdbd;
+    }
+
+    .receipt-list-row + .receipt-list-row {
+        border-top: 1px dashed #e1e1e1;
+    }
+</style>
+
+<div class="container receipt-page py-4">
+    <div class="receipt p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+            <div>
+                <p class="receipt-title mb-1">Recibo de Agendamento</p>
+                <h1 class="h4 mb-0">Navalha Barbearia</h1>
+            </div>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mt-3"></div>
+
+        <div class="receipt-section mt-4 pt-4">
+            <h2 class="h6 mb-3">Dados do cliente</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="receipt-label">Nome</div>
+                    <div class="receipt-value">@Model.Cliente.NomeCompleto</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">CPF</div>
+                    <div class="receipt-value">@Model.Cliente.CPF</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Telefone</div>
+                    <div class="receipt-value">@Model.Cliente.Telefone</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Endereco</div>
+                    <div class="receipt-value">@Model.Cliente.Endereco</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-section mt-4 pt-4">
+            <h2 class="h6 mb-3">Agendamento atual</h2>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="receipt-label">Codigo</div>
+                    <div class="receipt-value">#@Model.AgendamentoAtual.IdAgendamento</div>
+                </div>
+                <div class="col-md-8">
+                    <div class="receipt-label">Barbeiro</div>
+                    <div class="receipt-value">@Model.AgendamentoAtual.Barbeiro.NomeCompleto</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Procedimento</div>
+                    <div class="receipt-value">@Model.AgendamentoAtual.Procedimento</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Data e hora</div>
+                    <div class="receipt-value">@Model.AgendamentoAtual.DataHora.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Status</div>
+                    <div class="receipt-value">@Model.AgendamentoAtual.StatusAgendamentoEnum</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="receipt-label">Preco</div>
+                    <div class="receipt-value fw-semibold">@Model.AgendamentoAtual.Preco.ToString("C")</div>
+                </div>
+                <div class="col-12">
+                    <div class="receipt-label">Observacao</div>
+                    <div class="receipt-value">@(string.IsNullOrWhiteSpace(Model.AgendamentoAtual.Observacao) ? "Sem observacoes." : Model.AgendamentoAtual.Observacao)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-section receipt-list mt-4 pt-4">
+            <h2 class="h6 mb-3">Historico recente (2 ultimos)</h2>
+            @if (Model.HistoricoRecente.Any())
+            {
+                @foreach (var agendamento in Model.HistoricoRecente)
+                {
+                    <div class="receipt-list-row py-3">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <div>
+                                <div class="receipt-value">@agendamento.Procedimento com @agendamento.Barbeiro.NomeCompleto</div>
+                                <div class="receipt-label">@agendamento.DataHora.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                            <div class="text-md-end">
+                                <div class="receipt-value">@agendamento.Preco.ToString("C")</div>
+                                <div class="receipt-label">@agendamento.StatusAgendamentoEnum</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-0">Nenhum agendamento anterior encontrado.</p>
+            }
+        </div>
+
+        @if (Model.ExibirBotaoConfirmar)
+        {
+            <div class="receipt-section mt-4 pt-4">
+                <form asp-controller="Home" asp-action="ConfirmarAgendamento" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="AgendamentoAtual.Barbeiro.Id" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Cliente.CPF" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Cliente.Id" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Cliente.NomeCompleto" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Cliente.Telefone" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Procedimento" type="hidden" />
+                    <input asp-for="AgendamentoAtual.SlotHorarioId" type="hidden" />
+                    <input asp-for="AgendamentoAtual.DataHora" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Preco" type="hidden" />
+                    <input asp-for="AgendamentoAtual.Observacao" type="hidden" />
+
+                    <button type="submit" class="btn btn-dark">Confirmar agendamento</button>
+                </form>
+            </div>
+        }
+    </div>
+    <div class="mt-4 text-center">
+        <a class="btn btn-outline-dark" asp-controller="Agendamentos" asp-action="Index">Voltar para Agendamentos</a>
+    </div>
+</div>

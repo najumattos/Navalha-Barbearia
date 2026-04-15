@@ -1,33 +1,57 @@
 @model Navalha_Barbearia.Models.ViewModels.HomeFuncionarioViewModel
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Home Funcionario";
+    Layout = "_LayoutLogged";
 }
 
 <div class="container py-4">
     <h1 class="h3 mb-2">Painel do Funcionario</h1>
     <p class="text-muted mb-4">Profissional: @Model.NomeFuncionario</p>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="card border-0 shadow-sm">
+    <div id="meus-procedimentos" class="card border-0 shadow-sm">
         <div class="card-header bg-white fw-semibold">Procedimentos realizados</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Procedimento</th>
+                        <th>Id</th>
+                        <th>Nome</th>
                         <th>Descricao</th>
                         <th>Preco base</th>
                         <th>Preco por barbeiro</th>
+                        <th>Ativo</th>
+                        <th class="text-end">Alterar preco</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var procedimento in Model.Procedimentos)
+                    @foreach (var procedimento in Model.ProcedimentosDoBarbeiro)
                     {
+                        var formId = $"procedimento-form-{procedimento.Id}";
+
                         <tr>
-                            <td>@procedimento.ProcedimentoEnum</td>
+                            <td>@procedimento.Id</td>
+                            <td>@procedimento.Nome</td>
                             <td>@procedimento.Descricao</td>
                             <td>@procedimento.PrecoBase.ToString("C")</td>
                             <td>@procedimento.PrecoPorBarbeiro.ToString("C")</td>
+                            <td>@(procedimento.Ativo ? "Sim" : "Nao")</td>
+                            <td class="text-end">
+                                <form id="@formId" asp-controller="Home" asp-action="AtualizarPrecoPorBarbeiroFuncionario" method="post" class="d-inline-flex gap-2 justify-content-end align-items-center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="procedimentoId" value="@procedimento.Id" />
+                                    <input type="number"
+                                           name="precoPorBarbeiro"
+                                           class="form-control form-control-sm"
+                                           style="max-width: 120px;"
+                                           step="0.01"
+                                           min="0"
+                                           value="@procedimento.PrecoPorBarbeiro.ToString("0.00", CultureInfo.InvariantCulture)" />
+                                    <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -35,7 +59,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mt-4">
+    <div id="meus-agendamentos" class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white fw-semibold">Meus agendamentos</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -104,7 +128,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mt-4">
+    <div id="meus-clientes" class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white fw-semibold">Clientes cadastrados por mim</div>
         <div class="table-responsive">
             <table class="table align-middle mb-0">

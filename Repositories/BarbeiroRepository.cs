@@ -14,18 +14,37 @@ namespace Navalha_Barbearia.Repositories
                 NomeCompleto = "Julia Admin",
                 Telefone = "(11) 99999-1111",
                 TipoAcesso = TipoAcessoEnum.Administrador,
+                RelacoesProcedimentos =
+                [
+                    new BarbeiroProcedimentoModel
+                    {
+                        BarbeiroId = 1,
+                        ProcedimentoId = 1,
+                        PrecoPorBarbeiro = 45.00m,
+                        Ativo = true
+                    },
+                    new BarbeiroProcedimentoModel
+                    {
+                        BarbeiroId = 1,
+                        ProcedimentoId = 2,
+                        PrecoPorBarbeiro = 35.00m,
+                        Ativo = true
+                    }
+                ],
                 Procedimentos =
                 [
                     new ProcedimentoModel
                     {
-                        ProcedimentoEnum = ProcedimentoEnum.Corte,
+                        Id = 1,
+                        Nome = "Corte",
                         Descricao = "Corte tradicional com acabamento na navalha.",
                         PrecoBase = 45.00m,
                         PrecoPorBarbeiro = 45.00m
                     },
                     new ProcedimentoModel
                     {
-                        ProcedimentoEnum = ProcedimentoEnum.Barba,
+                        Id = 2,
+                        Nome = "Barba",
                         Descricao = "Modelagem completa da barba com toalha quente.",
                         PrecoBase = 35.00m,
                         PrecoPorBarbeiro = 35.00m
@@ -53,18 +72,37 @@ namespace Navalha_Barbearia.Repositories
                 NomeCompleto = "Carlos Funcionario",
                 Telefone = "(11) 98888-2222",
                 TipoAcesso = TipoAcessoEnum.Funcionario,
+                RelacoesProcedimentos =
+                [
+                    new BarbeiroProcedimentoModel
+                    {
+                        BarbeiroId = 2,
+                        ProcedimentoId = 1,
+                        PrecoPorBarbeiro = 50.00m,
+                        Ativo = true
+                    },
+                    new BarbeiroProcedimentoModel
+                    {
+                        BarbeiroId = 2,
+                        ProcedimentoId = 3,
+                        PrecoPorBarbeiro = 22.00m,
+                        Ativo = true
+                    }
+                ],
                 Procedimentos =
                 [
                     new ProcedimentoModel
                     {
-                        ProcedimentoEnum = ProcedimentoEnum.Corte,
+                        Id = 1,
+                        Nome = "Corte",
                         Descricao = "Corte tradicional com acabamento na navalha.",
                         PrecoBase = 45.00m,
                         PrecoPorBarbeiro = 50.00m
                     },
                     new ProcedimentoModel
                     {
-                        ProcedimentoEnum = ProcedimentoEnum.Sobrancelha,
+                        Id = 3,
+                        Nome = "Sobrancelha",
                         Descricao = "Alinhamento e finalizacao de sobrancelha.",
                         PrecoBase = 20.00m,
                         PrecoPorBarbeiro = 22.00m
@@ -102,6 +140,14 @@ namespace Navalha_Barbearia.Repositories
         {
             var proximoId = _barbeiros.Count == 0 ? 1 : _barbeiros.Max(x => x.Id) + 1;
             barbeiro.Id = proximoId;
+
+            if (barbeiro.RelacoesProcedimentos is not null)
+            {
+                foreach (var relacao in barbeiro.RelacoesProcedimentos)
+                {
+                    relacao.BarbeiroId = barbeiro.Id;
+                }
+            }
 
             _barbeiros.Add(barbeiro);
             return barbeiro;

@@ -44,20 +44,22 @@
 
             <div class="col-md-6">
                 <label asp-for="Cliente.BarbeiroQueCadastrou.Id" class="form-label">Barbeiro cadastrado por</label>
-                <select asp-for="Cliente.BarbeiroQueCadastrou.Id" class="form-select">
-                    <option value="">Selecione</option>
-                    @foreach (var barbeiro in Model.Barbeiros)
-                    {
-                        <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-6 d-flex align-items-end">
-                <div class="form-check">
-                    <input asp-for="Cliente.Ativo" class="form-check-input" />
-                    <label asp-for="Cliente.Ativo" class="form-check-label">Ativo</label>
-                </div>
+                @if (ViewBag.PodeEscolherBarbeiro is true)
+                {
+                    <select asp-for="Cliente.BarbeiroQueCadastrou.Id" class="form-select">
+                        <option value="">Selecione</option>
+                        @foreach (var barbeiro in Model.Barbeiros)
+                        {
+                            <option value="@barbeiro.Id">@barbeiro.NomeCompleto</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="Cliente.BarbeiroQueCadastrou.Id" value="@(Model.Barbeiros.FirstOrDefault()?.Id ?? 0)" />
+                    <input class="form-control" value="@(Model.Barbeiros.FirstOrDefault()?.NomeCompleto ?? "Nao identificado")" readonly />
+                    <small class="text-muted">Para funcionario, o cliente e cadastrado automaticamente para o proprio barbeiro logado.</small>
+                }
             </div>
 
             <div class="col-12 d-flex gap-2 pt-2">

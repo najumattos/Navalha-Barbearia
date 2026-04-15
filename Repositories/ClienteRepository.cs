@@ -96,6 +96,13 @@ namespace Navalha_Barbearia.Repositories
             return Atualizar(cliente);
         }
 
+        public ClienteModel Ativar(int id)
+        {
+            var cliente = ObterPorId(id) ?? throw new KeyNotFoundException($"Cliente {id} nao encontrado.");
+            cliente.Ativo = true;
+            return Atualizar(cliente);
+        }
+
         public void Excluir(int id)
         {
             var cliente = ObterPorId(id) ?? throw new KeyNotFoundException($"Cliente {id} nao encontrado.");

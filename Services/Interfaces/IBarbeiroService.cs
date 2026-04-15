@@ -11,8 +11,8 @@ namespace Navalha_Barbearia.Services.Interfaces
         BarbeiroModel Atualizar(BarbeiroModel barbeiro);
         void Excluir(int id);
 
-        ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante);
-        ProcedimentoModel RemoverProcedimentoDoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante);
-        ProcedimentoModel AtualizarPrecoPorBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, decimal precoPorBarbeiro, TipoAcessoEnum tipoAcessoSolicitante);
+        ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, int procedimentoId, TipoAcessoEnum tipoAcessoSolicitante);
+        ProcedimentoModel RemoverProcedimentoDoBarbeiro(int barbeiroId, int procedimentoId, TipoAcessoEnum tipoAcessoSolicitante);
+        ProcedimentoModel AtualizarPrecoPorBarbeiro(int barbeiroId, int procedimentoId, decimal precoPorBarbeiro, TipoAcessoEnum tipoAcessoSolicitante);
     }
 }

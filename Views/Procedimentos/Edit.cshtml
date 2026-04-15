@@ -6,26 +6,27 @@
 
 <div class="container py-4">
     <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
-        <span class="eyebrow">Atualizacao</span>
+        <span class="eyebrow">Atualizacao de catalogo</span>
         <h1 class="h3 mt-3 mb-4">Editar procedimento</h1>
+        <p class="text-muted mb-4">Atualize o nome, a descricao e o preco base do procedimento selecionado.</p>
 
         <form asp-action="Edit" method="post" class="row g-3">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="ProcedimentoEnum" />
+            <input asp-for="Id" type="hidden" />
 
             <div class="col-md-6">
-                <label class="form-label">Tipo</label>
-                <input class="form-control" value="@Model.ProcedimentoEnum" readonly />
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
             </div>
 
             <div class="col-md-6">
                 <label asp-for="PrecoBase" class="form-label"></label>
-                <input asp-for="PrecoBase" type="number" step="0.01" class="form-control" />
+                <input asp-for="PrecoBase" type="number" step="0.01" class="form-control" id="preco-base" />
             </div>
 
             <div class="col-12">
                 <label asp-for="Descricao" class="form-label"></label>
-                <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
+                <textarea asp-for="Descricao" class="form-control" rows="4" id="descricao"></textarea>
             </div>
 
             <div class="col-12 d-flex gap-2 pt-2">

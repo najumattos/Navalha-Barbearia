@@ -116,10 +116,10 @@ namespace Navalha_Barbearia.Services
             return _clienteRepository.Desativar(clienteId);
         }
 
-        public void ExcluirPorAdministrador(int clienteId, TipoAcessoEnum tipoAcessoSolicitante)
+        public ClienteModel AtivarPorAdministrador(int clienteId, TipoAcessoEnum tipoAcessoSolicitante)
         {
             ValidarAdministrador(tipoAcessoSolicitante);
-            _clienteRepository.Excluir(clienteId);
+            return _clienteRepository.Ativar(clienteId);
         }
 
         private static void ValidarAdministrador(TipoAcessoEnum tipoAcessoSolicitante)

@@ -19,19 +19,35 @@ namespace Navalha_Barbearia.Services
         public List<BarbeiroModel> ObterTodos()
         {
             // Responsabilidade unica: o service coordena as regras, mas nao conhece detalhes de persistencia.
-            return _barbeiroRepository.ObterTodos();
+            var barbeiros = _barbeiroRepository.ObterTodos();
+            foreach (var barbeiro in barbeiros)
+            {
+                SincronizarEstruturasDeProcedimento(barbeiro);
+            }
+
+            return barbeiros;
         }
 
         public BarbeiroModel? ObterPorId(int id)
         {
-            return _barbeiroRepository.ObterPorId(id);
+            var barbeiro = _barbeiroRepository.ObterPorId(id);
+            if (barbeiro is null)
+            {
+                return null;
+            }
+
+            SincronizarEstruturasDeProcedimento(barbeiro);
+            return barbeiro;
         }
 
         public BarbeiroModel Criar(BarbeiroModel barbeiro)
         {
             // Codigo limpo: validacao simples e explicita antes de persistir o agregado.
             barbeiro.Procedimentos ??= new List<ProcedimentoModel>();
+            barbeiro.RelacoesProcedimentos ??= new List<BarbeiroProcedimentoModel>();
             barbeiro.Clientes ??= new List<ClienteModel>();
+
+            SincronizarEstruturasDeProcedimento(barbeiro);
             return _barbeiroRepository.Adicionar(barbeiro);
         }
 
@@ -41,6 +57,7 @@ namespace Navalha_Barbearia.Services
 
             // Mantemos as colecoes para nao apagar relacoes ja cadastradas na lista em memoria.
             barbeiro.Procedimentos = barbeiroExistente.Procedimentos;
+            barbeiro.RelacoesProcedimentos = barbeiroExistente.RelacoesProcedimentos;
             barbeiro.Clientes = barbeiroExistente.Clientes;
 
             return _barbeiroRepository.Atualizar(barbeiro);
@@ -51,39 +68,64 @@ namespace Navalha_Barbearia.Services
             _barbeiroRepository.Excluir(id);
         }
 
-        public ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante)
+        public ProcedimentoModel AdicionarProcedimentoAoBarbeiro(int barbeiroId, int procedimentoId, TipoAcessoEnum tipoAcessoSolicitante)
         {
             ValidarGerenciamentoDeLista(tipoAcessoSolicitante);
 
             var barbeiro = ObterBarbeiroObrigatorio(barbeiroId);
-            var procedimentoCatalogo = _procedimentoRepository.ObterPorTipo(procedimentoEnum)
-                ?? throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao encontrado.");
+            SincronizarEstruturasDeProcedimento(barbeiro);
 
-            var procedimentoExistente = barbeiro.Procedimentos.FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum);
-            if (procedimentoExistente is not null)
+            var procedimentoCatalogo = _procedimentoRepository.ObterPorId(procedimentoId)
+                ?? throw new KeyNotFoundException($"Procedimento {procedimentoId} nao encontrado.");
+
+            var relacaoExistente = barbeiro.RelacoesProcedimentos.FirstOrDefault(x => x.ProcedimentoId == procedimentoId);
+            if (relacaoExistente is not null)
             {
-                return procedimentoExistente;
+                relacaoExistente.Ativo = true;
+                relacaoExistente.AtualizadoEm = DateTime.Now;
+                if (relacaoExistente.PrecoPorBarbeiro <= 0)
+                {
+                    relacaoExistente.PrecoPorBarbeiro = procedimentoCatalogo.PrecoBase;
+                }
+
+                SincronizarEstruturasDeProcedimento(barbeiro);
+                return barbeiro.Procedimentos.First(x => x.Id == procedimentoId);
             }
 
-            var procedimentoNovo = CopiarProcedimentoDoCatalogo(procedimentoCatalogo);
-            barbeiro.Procedimentos.Add(procedimentoNovo);
+            barbeiro.RelacoesProcedimentos.Add(new BarbeiroProcedimentoModel
+            {
+                BarbeiroId = barbeiro.Id,
+                ProcedimentoId = procedimentoId,
+                PrecoPorBarbeiro = procedimentoCatalogo.PrecoBase,
+                Ativo = true,
+                AtualizadoEm = DateTime.Now
+            });
 
-            return procedimentoNovo;
+            SincronizarEstruturasDeProcedimento(barbeiro);
+
+            return barbeiro.Procedimentos.First(x => x.Id == procedimentoId);
         }
 
-        public ProcedimentoModel RemoverProcedimentoDoBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, TipoAcessoEnum tipoAcessoSolicitante)
+        public ProcedimentoModel RemoverProcedimentoDoBarbeiro(int barbeiroId, int procedimentoId, TipoAcessoEnum tipoAcessoSolicitante)
         {
             ValidarGerenciamentoDeLista(tipoAcessoSolicitante);
 
             var barbeiro = ObterBarbeiroObrigatorio(barbeiroId);
-            var procedimentoExistente = barbeiro.Procedimentos.FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum)
-                ?? throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao esta vinculado ao barbeiro {barbeiroId}.");
+            SincronizarEstruturasDeProcedimento(barbeiro);
 
-            barbeiro.Procedimentos.Remove(procedimentoExistente);
+            var relacao = barbeiro.RelacoesProcedimentos.FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo)
+                ?? throw new KeyNotFoundException($"Procedimento {procedimentoId} nao esta vinculado ao barbeiro {barbeiroId}.");
+
+            relacao.Ativo = false;
+            relacao.AtualizadoEm = DateTime.Now;
+
+            var procedimentoExistente = barbeiro.Procedimentos.First(x => x.Id == procedimentoId);
+            SincronizarEstruturasDeProcedimento(barbeiro);
+
             return procedimentoExistente;
         }
 
-        public ProcedimentoModel AtualizarPrecoPorBarbeiro(int barbeiroId, ProcedimentoEnum procedimentoEnum, decimal precoPorBarbeiro, TipoAcessoEnum tipoAcessoSolicitante)
+        public ProcedimentoModel AtualizarPrecoPorBarbeiro(int barbeiroId, int procedimentoId, decimal precoPorBarbeiro, TipoAcessoEnum tipoAcessoSolicitante)
         {
             // Regra de negocio: o Administrador visualiza o preco, mas a alteracao do preco customizado e da area do Funcionario.
             if (tipoAcessoSolicitante != TipoAcessoEnum.Funcionario)
@@ -92,10 +134,16 @@ namespace Navalha_Barbearia.Services
             }
 
             var barbeiro = ObterBarbeiroObrigatorio(barbeiroId);
-            var procedimento = barbeiro.Procedimentos.FirstOrDefault(x => x.ProcedimentoEnum == procedimentoEnum)
-                ?? throw new KeyNotFoundException($"Procedimento {procedimentoEnum} nao esta vinculado ao barbeiro {barbeiroId}.");
+            SincronizarEstruturasDeProcedimento(barbeiro);
 
-            procedimento.PrecoPorBarbeiro = precoPorBarbeiro;
+            var relacao = barbeiro.RelacoesProcedimentos.FirstOrDefault(x => x.ProcedimentoId == procedimentoId && x.Ativo)
+                ?? throw new KeyNotFoundException($"Procedimento {procedimentoId} nao esta vinculado ao barbeiro {barbeiroId}.");
+
+            relacao.PrecoPorBarbeiro = precoPorBarbeiro;
+            relacao.AtualizadoEm = DateTime.Now;
+
+            SincronizarEstruturasDeProcedimento(barbeiro);
+            var procedimento = barbeiro.Procedimentos.First(x => x.Id == procedimentoId);
             return procedimento;
         }
 
@@ -105,12 +153,60 @@ namespace Navalha_Barbearia.Services
                 ?? throw new KeyNotFoundException($"Barbeiro {barbeiroId} nao encontrado.");
         }
 
+        private void SincronizarEstruturasDeProcedimento(BarbeiroModel barbeiro)
+        {
+            barbeiro.Procedimentos ??= new List<ProcedimentoModel>();
+            barbeiro.RelacoesProcedimentos ??= new List<BarbeiroProcedimentoModel>();
+
+            if (barbeiro.RelacoesProcedimentos.Count == 0 && barbeiro.Procedimentos.Count > 0)
+            {
+                foreach (var procedimento in barbeiro.Procedimentos)
+                {
+                    barbeiro.RelacoesProcedimentos.Add(new BarbeiroProcedimentoModel
+                    {
+                        BarbeiroId = barbeiro.Id,
+                        ProcedimentoId = procedimento.Id,
+                        PrecoPorBarbeiro = procedimento.PrecoPorBarbeiro,
+                        Ativo = true,
+                        AtualizadoEm = DateTime.Now
+                    });
+                }
+            }
+
+            var relacoesAtivas = barbeiro.RelacoesProcedimentos
+                .Where(x => x.Ativo)
+                .ToDictionary(x => x.ProcedimentoId, x => x);
+
+            barbeiro.Procedimentos.RemoveAll(x => !relacoesAtivas.ContainsKey(x.Id));
+
+            foreach (var relacao in relacoesAtivas.Values)
+            {
+                var procedimentoCatalogo = _procedimentoRepository.ObterPorId(relacao.ProcedimentoId);
+                if (procedimentoCatalogo is null)
+                {
+                    continue;
+                }
+
+                var procedimento = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == relacao.ProcedimentoId);
+                if (procedimento is null)
+                {
+                    procedimento = CopiarProcedimentoDoCatalogo(procedimentoCatalogo);
+                    barbeiro.Procedimentos.Add(procedimento);
+                }
+
+                procedimento.Nome = procedimentoCatalogo.Nome;
+                procedimento.Descricao = procedimentoCatalogo.Descricao;
+                procedimento.PrecoBase = procedimentoCatalogo.PrecoBase;
+                procedimento.PrecoPorBarbeiro = relacao.PrecoPorBarbeiro;
+            }
+        }
+
         private static ProcedimentoModel CopiarProcedimentoDoCatalogo(ProcedimentoModel procedimentoCatalogo)
         {
-            // Copia explicita para manter o preco customizado independente entre barbeiros.
             return new ProcedimentoModel
             {
-                ProcedimentoEnum = procedimentoCatalogo.ProcedimentoEnum,
+                Id = procedimentoCatalogo.Id,
+                Nome = procedimentoCatalogo.Nome,
                 Descricao = procedimentoCatalogo.Descricao,
                 PrecoBase = procedimentoCatalogo.PrecoBase
             };

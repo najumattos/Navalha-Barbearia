@@ -17,6 +17,9 @@ namespace Navalha_Barbearia.Models
         // O procedimento eh ligado ao dominio existente via enum, evitando strings livres.
         public ProcedimentoEnum Procedimento { get; set; }
 
+        // Referencia ao slot escolhido no calendario de horarios do barbeiro.
+        public int SlotHorarioId { get; set; }
+
         public DateTime DataHora { get; set; }
 
         // Pendente e a situacao padrao para um novo agendamento.

@@ -8,10 +8,12 @@ namespace Navalha_Barbearia.Controllers
     public class AuthController : Controller
     {
         private readonly ILoginService _loginService;
+        private readonly IUsuarioContextoService _usuarioContextoService;
 
-        public AuthController(ILoginService loginService)
+        public AuthController(ILoginService loginService, IUsuarioContextoService usuarioContextoService)
         {
             _loginService = loginService;
+            _usuarioContextoService = usuarioContextoService;
         }
 
         [HttpGet]
@@ -32,10 +34,13 @@ namespace Navalha_Barbearia.Controllers
             var login = _loginService.Autenticar(loginRequest.Email, loginRequest.Senha);
             if (login is null)
             {
-                // Feedback claro para evitar mensagens ambiguas e facilitar manutencao.
+                // Feedback claro evita ambiguidade para usuaria e para manutencao futura.
                 ModelState.AddModelError(string.Empty, "E-mail ou senha invalidos.");
                 return View(loginRequest);
             }
+
+            // SRP: a responsabilidade de armazenar contexto de login fica no service dedicado.
+            _usuarioContextoService.DefinirContextoLogin(login.TipoAcessoEnum, login.IdBarbeiro, login.IdCliente);
 
             if (login.TipoAcessoEnum == TipoAcessoEnum.Funcionario)
             {
@@ -47,13 +52,16 @@ namespace Navalha_Barbearia.Controllers
                 return RedirectToAction("HomeAdministrador", "Home", new { idBarbeiro = login.IdBarbeiro ?? 0 });
             }
 
-            if (login.TipoAcessoEnum == TipoAcessoEnum.Cliente)
-            {
-                return RedirectToAction("HomeCliente", "Home", new { idCliente = login.IdCliente ?? 0 });
-            }
-
-            ModelState.AddModelError(string.Empty, "Perfil sem area de navegacao configurada.");
+            ModelState.AddModelError(string.Empty, "Perfil nao tem permissao de acesso.");
             return View(loginRequest);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            _usuarioContextoService.LimparContextoLogin();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

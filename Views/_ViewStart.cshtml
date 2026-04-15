@@ -1,3 +1,11 @@
 ﻿@{
-    Layout = "_Layout";
+    // Regra de apresentacao centralizada: evita repeticao de Layout em cada view (DRY).
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var paginaPublica =
+        (controller == "Home" && (action == "Index" || action == "Privacy")) ||
+        (controller == "Auth" && action == "Login");
+
+    Layout = paginaPublica ? "_LayoutPublic" : "_LayoutLogged";
 }

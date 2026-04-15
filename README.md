@@ -1,184 +1,197 @@
 # Navalha Barbearia
 
-Aplicacao ASP.NET Core MVC organizada com foco em SOLID, separacao de responsabilidades, clean code e uma apresentacao minimalista.
+Aplicacao ASP.NET Core MVC (.NET 8) para gestao de barbearia, com foco em separacao de responsabilidades, regras de negocio por perfil e fluxo de agendamento.
 
-## O que foi ajustado agora
+## Visao Geral
 
-- Normalizacao do genero para o dominio de cliente: `GeneroEnum` pertence a `ClienteModel`.
-- Views principais atualizadas para respeitar a modelagem normalizada e o visual simples.
-- CRUD MVC criado e organizado por entidade:
-  - [Views/Barbeiros/Index.cshtml](Views/Barbeiros/Index.cshtml)
-  - [Views/Clientes/Index.cshtml](Views/Clientes/Index.cshtml)
-  - [Views/Procedimentos/Index.cshtml](Views/Procedimentos/Index.cshtml)
-  - [Views/Agendamentos/Index.cshtml](Views/Agendamentos/Index.cshtml)
-- Layout compartilhado e CSS global refinados para uma aparencia mais limpa e consistente.
-- Comentarios adicionados em pontos chave para explicar intencao, responsabilidade e boas praticas para uma desenvolvedora junior.
-- Paginas institucionais e de erro simplificadas para nao competir com as telas principais.
+O sistema atende dois perfis principais com acesso ao login:
+- Administrador
+- Funcionario (barbeiro)
 
-## Atualizacao recente (Agendamento e home)
+Clientes nao possuem acesso ao login do sistema. O agendamento no fluxo publico continua disponivel sem autenticacao.
 
-- Adicionado o dominio de agendamento com model, enum e camadas separadas:
-  - [Models/AgendamentoModel.cs](Models/AgendamentoModel.cs)
-  - [Enums/StatusAgendamentoEnum.cs](Enums/StatusAgendamentoEnum.cs)
-  - [Enums/GeneroEnum.cs](Enums/GeneroEnum.cs)
-  - [Repositories/Interfaces/IAgendamentoRepository.cs](Repositories/Interfaces/IAgendamentoRepository.cs)
-  - [Repositories/AgendamentoRepository.cs](Repositories/AgendamentoRepository.cs)
-  - [Services/Interfaces/IAgendamentoService.cs](Services/Interfaces/IAgendamentoService.cs)
-  - [Services/AgendamentoService.cs](Services/AgendamentoService.cs)
-  - [Controllers/AgendamentoController.cs](Controllers/AgendamentoController.cs)
-- O campo de barbeiro no agendamento passou a ser uma relacao direta com `BarbeiroModel`, reduzindo texto solto e melhorando a integridade do dado.
-- O cliente nao visualiza mais o status inicial na tela de agendamento.
-- O campo de preco da Home agora e preenchido automaticamente pelo `PrecoPorBarbeiro` de acordo com barbeiro + procedimento selecionados.
-- O funcionario pode visualizar e alterar apenas os agendamentos vinculados ao proprio id.
-- O administrador pode visualizar a agenda completa de todos os barbeiros.
-- Os campos de cliente foram normalizados: `NomeCliente`, `Telefone` e `CPF` sairam do agendamento e passaram para `ClienteModel`.
-- O CPF na Home aciona auto preenchimento do nome do cliente por endpoint publico, sem exigir login.
-- Home inicial virou uma pagina minimalista com:
-  - apresentacao da barbearia
-  - botao de login para barbeiros
-  - formulario visual de agendamento com selecao de barbeiro
-- O layout compartilhado foi simplificado para ficar mais leve e limpo.
+O projeto segue arquitetura em camadas:
+- Controllers: orquestracao das requisicoes HTTP.
+- Services: regras de negocio e validacoes de permissao.
+- Repositories: persistencia em memoria (listas estaticas).
 
-## Atualizacao recente (Login e telas)
+## Requisitos Nao Funcionais (RNF)
 
-- Home inicial simplificada em [Views/Home/Index.cshtml](Views/Home/Index.cshtml) com mensagem de boas-vindas e botao de login.
-- Nova tela de login em [Views/Auth/Login.cshtml](Views/Auth/Login.cshtml).
-- Nova tela de administracao em [Views/Home/HomeAdministrador.cshtml](Views/Home/HomeAdministrador.cshtml) com lista de barbeiros.
-- Nova tela de funcionario em [Views/Home/HomeFuncionario.cshtml](Views/Home/HomeFuncionario.cshtml) com lista de procedimentos do funcionario logado.
-- Nova tela de cliente em [Views/Home/HomeCliente.cshtml](Views/Home/HomeCliente.cshtml) com dados cadastrais e agendamentos por CPF.
-- Fluxo de autenticacao simples em camadas:
-  - Controller: [Controllers/AuthController.cs](Controllers/AuthController.cs)
-  - Service: [Services/LoginService.cs](Services/LoginService.cs)
-  - Repository: [Repositories/LoginRepository.cs](Repositories/LoginRepository.cs)
-- Novos ViewModels para manter SRP no MVC:
-  - [Models/ViewModels/LoginRequestViewModel.cs](Models/ViewModels/LoginRequestViewModel.cs)
-  - [Models/ViewModels/HomeFuncionarioViewModel.cs](Models/ViewModels/HomeFuncionarioViewModel.cs)
+### RNF de arquitetura e qualidade
+- RNF-01: Arquitetura em camadas com separacao de responsabilidades (Controller, Service e Repository).
+- RNF-02: Uso de injecao de dependencias para servicos e repositorios.
+- RNF-03: Padrao Repository com interfaces para desacoplar regra de negocio da persistencia.
+- RNF-04: Tipagem forte com enums de dominio para reduzir erro por strings livres (tipo de acesso, status e procedimento).
 
-## O que foi estruturado
+### RNF de seguranca e acesso
+- RNF-05: Sessao HTTP para contexto do usuario logado, com timeout de 4 horas.
+- RNF-06: Protecao Anti-CSRF em acoes POST por meio de ValidateAntiForgeryToken.
+- RNF-07: Redirecionamento HTTPS e HSTS no pipeline da aplicacao.
+- RNF-08: Controle de autorizacao por perfil em nivel de regra de negocio (guard clauses e validacoes no service/controller).
 
-- Centralizacao dos enums em uma pasta dedicada `Enums`.
-- Relacao entre `BarbeiroModel` e `ProcedimentoModel` por meio da lista `Procedimentos` no barbeiro.
-- Relacao entre `BarbeiroModel` e `ClienteModel` por meio da lista `Clientes` no barbeiro.
-- Relacao entre `AgendamentoModel` e `ClienteModel` por entidade, sem dados duplicados de nome/telefone/cpf.
-- Service para orquestrar regras de negocio:
-  - `BarbeiroService`
-  - `ProcedimentoService`
-  - `ClienteService`
-  - `AgendamentoService`
-- Controllers enxutos, sem regra de negocio pesada.
-- Repositories em memoria para persistencia simples durante o desenvolvimento.
-- Validacao de acesso por perfil no fluxo de navegacao web.
-- Agendamento separado em service/repository para manter a responsabilidade unica.
+### RNF de dados e operacao
+- RNF-09: Persistencia em memoria para desenvolvimento e demonstracao.
+- RNF-10: Estado inicial consistente para novos agendamentos (status pendente por padrao).
+- RNF-11: Feedback de validacao via ModelState para formularios invalidos.
 
-## Regras de negocio implementadas
+### Limitacoes nao funcionais conhecidas
+- RNF-12: Nao ha banco de dados relacional; os dados sao perdidos ao reiniciar a aplicacao.
+- RNF-13: Nao ha autenticacao robusta (Identity/JWT); login e sessao sao simulados em memoria.
+- RNF-14: Senhas de usuarios de desenvolvimento estao em texto simples no repositorio em memoria.
 
-- `TipoAcessoEnum.Administrador` pode atualizar `Descricao` e `PrecoBase` do catalogo de procedimentos.
-- `TipoAcessoEnum.Funcionario` pode adicionar e remover procedimentos da propria lista.
-- `TipoAcessoEnum.Funcionario` pode atualizar `PrecoPorBarbeiro` dos seus procedimentos.
-- O administrador pode visualizar o preco praticado por cada barbeiro por meio do retorno do barbeiro com sua lista de procedimentos.
-- `Descricao` e `PrecoBase` representam o cadastro global do procedimento e sao sincronizados em todos os barbeiros.
-- No login: Funcionario vai para HomeFuncionario e Administrador vai para HomeAdministrador.
-- No login: Cliente vai para HomeCliente.
-- Agendamento inicia com `StatusAgendamentoEnum.Pendente` por padrao.
-- O barbeiro escolhido no formulario e persistido como entidade relacionada, nao como string.
-- O preco do agendamento e recalculado na camada de service para garantir consistencia, mesmo que o cliente altere o formulario no navegador.
-- O funcionario altera apenas seus proprios agendamentos; o administrador apenas visualiza todos.
-- Cliente visualiza agendamentos vinculados ao proprio CPF e pode alterar somente o `StatusAgendamentoEnum` dos seus agendamentos.
-- Cliente apenas visualiza os dados cadastrais na HomeCliente.
-- Barbeiro pode cadastrar, visualizar, editar e desativar clientes que cadastrou.
-- Administrador pode visualizar, atualizar, desativar e excluir clientes de todos os barbeiros.
+## Regras de Negocio (RN)
 
-## Principios SOLID aplicados
+### RN de controle de acesso
+- RN-01: Somente Administrador pode visualizar todos os agendamentos.
+- RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao seu proprio Id.
+- RN-03: Agendamento publico (sem login) permite clientes agendarem rapidamente, sem acesso posterior a dashboard; historico de agendamentos fica disponivel apenas em resumo publico por ID de agendamento.
+- RN-04: Qualquer usuario pode visualizar o catalogo de procedimentos; somente Administrador cria, edita e exclui procedimentos do catalogo. O cadastro usa `Id` e `Nome` no lugar de um enum de procedimento.
+- RN-29: Apenas Administrador e Funcionario podem fazer login no sistema. Clientes nao tem acesso ao painel autenticado.
 
-- SRP: controllers, services e repositories tem responsabilidades separadas.
-- OCP: a regra de negocio esta concentrada nos services, facilitando extensao.
-- DIP: controllers dependem de interfaces de services, e services dependem de interfaces de repositories.
-- ISP: as interfaces expostas sao pequenas e focadas no que cada camada precisa.
+### RN de clientes
+- RN-05: Todo cliente cadastrado recebe TipoAcesso = Cliente.
+- RN-06: Todo cliente fica vinculado ao barbeiro que o cadastrou.
+- RN-07: Cliente novo nasce ativo, com data de cadastro preenchida.
+- RN-08: Funcionario gerencia apenas os clientes que cadastrou.
+- RN-09: Arquivamento de cliente e logica de ativacao/desativacao por perfil administrador.
 
-## Como o codigo foi organizado
+### RN de agendamento
+- RN-10: Agendamento exige barbeiro valido, CPF de cliente valido e procedimento.
+- RN-11: Status inicial padrao do agendamento quando feito pelo Barbeiro é Agendado.
+- RN-12: No fluxo publico da home(Agendamento rapido), ao confirmar agendamento, status vira AguardandoConfirmacaoBarbeiro.
+- RN-13: Status de agendamento so pode ser alterado por perfis autorizados, respeitando o escopo do registro.
+- RN-14: Funcionario pode excluir apenas os proprios agendamentos.
+- RN-15: Data do agendamento nao pode ser anterior a data atual; validacao centralizada no service impede criacao de agendamentos retroativos.
+- RN-24: Quando faltar 30 minutos ou menos para o horario do agendamento, o status transiciona automaticamente de Agendado para AguardandoConfirmacaoCliente; validacao ocorre sempre que agendamentos sao retornados do service.
 
-- Controllers apenas orquestram entrada, saida e autorizacao basica.
-- Services concentram validacoes, regras de acesso e calculos de negocio.
-- Repositories cuidam da persistencia em memoria e do acesso aos dados.
-- ViewModels entregam somente o necessario para a tela.
-- Views exibem informacao e UX simples; nao carregam regra de negocio.
-- Cada entidade principal ganhou sua pasta de views com `Index`, `Create`, `Edit` e `Delete`.
-- A navegacao do layout foi ajustada para abrir as areas de CRUD diretamente.
+### RN de procedimentos e precificacao
+- RN-16: Catalogo de procedimentos usa PrecoBase como referencia.
+- RN-17: PrecoPorBarbeiro usa fallback para PrecoBase quando nao houver customizacao.
+- RN-18: Atualizacao de descricao e preco base do catalogo propaga para todos os barbeiros que realizam o procedimento.
+- RN-19: Exclusao de procedimento remove o item do catalogo e da lista de procedimentos dos barbeiros.
+- RN-20: Funcionario pode customizar apenas o proprio PrecoPorBarbeiro pelo painel do funcionario, sem alterar o cadastro do procedimento.
+- RN-25: A relacao Barbeiro x Procedimento esta em transicao para N:N explicito com entidade de vinculo (`BarbeiroProcedimentoModel`), mantendo sincronizacao com a lista legada de `Procedimentos` para compatibilidade das telas atuais.
+- RN-26: Leitura de preco por barbeiro prioriza a relacao N:N (`RelacoesProcedimentos` ativas) e usa fallback para a estrutura legada quando necessario.
+- RN-27: A listagem de procedimentos do funcionario exibe `PrecoPorBarbeiro` e o status `Ativo` de cada vinculo.
+- RN-28: O campo `Ativo` da listagem de procedimentos do funcionario e controlado por toggle-switch, ativando ou inativando o vinculo com o procedimento em tempo real.
 
-## Boas praticas de Clean Code aplicadas
+### RN de experiencia no fluxo publico
+- RN-21: Busca publica por CPF retorna apenas clientes ativos para auto preenchimento para Agendamento Rápido.
+- RN-22: O Agendamento Rápido na Home calcula e exibe preco dinamico por barbeiro e procedimento selecionado.
+- RN-23: Resumo de agendamento exibe um recibo com informações do usuario, do agendamento e o historico recente do cliente.
+- RN-30: O fluxo de detalhes/resumo de agendamento foi unificado na view `Views/Agendamentos/ResumoAgendamento.cshtml`; o acesso por `Agendamentos/Details` e pela listagem aponta para o mesmo resumo.
+- RN-31: Em qualquer tela de criacao de agendamento, a lista de procedimentos deve mostrar apenas os procedimentos ativos vinculados ao barbeiro selecionado; validacao da regra tambem ocorre no service.
 
-- Nomes claros para entidades, services e metodos.
-- Guard clauses para validar acesso e evitar aninhamento desnecessario.
-- Copia explicita do procedimento do catalogo para o barbeiro, evitando acoplamento indevido entre instancias.
-- Normalizacao de dados: informacoes do cliente ficaram em uma entidade dedicada para evitar redundancia no agendamento.
-- Comentarios pontuais explicando a intencao da regra de negocio para facilitar manutencao por uma desenvolvedora junior.
-- ViewModels dedicados para separar entrada de tela e entidades de dominio.
-- Formularios da Home usam markup simples, sem JS de envio, para manter a interface previsivel.
-- Relacoes entre entidades sao expostas de forma clara para a tela via ViewModel, preservando SRP.
-- Regra critica de preco validada em duas camadas (UI para experiencia e Service para regra de negocio), reduzindo risco de inconsistencia.
-- Nomenclatura explicitamente orientada ao dominio: `ClienteModel`, `BarbeiroModel`, `AgendamentoModel` e `ProcedimentoModel`.
-- Layout visual minimalista, com hierarquia clara e poucos elementos por tela.
+## Stakeholders (Partes Interessadas)
 
-## Verificacao realizada
+### Administrador
+- Objetivo: gerir operacao e padronizacao do negocio.
+- Interesses: visao completa da agenda, gestao de barbeiros, catalogo de procedimentos e clientes.
+- Acoes principais: CRUD de barbeiros, CRUD de procedimentos, visao total de agendamentos, gestao de clientes arquivados.
 
-- O projeto foi validado com `dotnet build -v minimal`.
-- A configuracao de DI em `Program.cs` continua apontando para as interfaces corretas.
-- As views foram conferidas para manter os bindings alinhados com os models atuais.
-- A navegacao principal agora aponta para as novas telas de CRUD das entidades.
+### Funcionario (Barbeiro)
+- Objetivo: operar atendimento diario e agenda propria.
+- Interesses: manter agenda atualizada, cadastrar clientes e ajustar precificacao propria.
+- Acoes principais: visualizar/editar agendamentos proprios, cadastrar clientes vinculados, ajustar preco por procedimento.
 
-## Endpoints principais
+### Cliente
+- Objetivo: agendar servico.
+- Interesses: facilidade para agendar e visibilidade de resumo de agendamento.
+- Acoes principais: agendar via home publica, consultar resumo de agendamento por link publico.
 
-### Procedimentos
+### Dono/Gestor da Barbearia (Seu Zé Lucas Alexandrino)
+- Objetivo: ganho de organizacao operacional e controle do atendimento.
+- Interesses: produtividade da equipe, clareza de agenda e governanca de precos/catalogo.
+- Acoes principais: acompanhar resultado por meio do perfil administrador.
 
-- `GET /api/Procedimento`
-- `GET /api/Procedimento/{procedimentoEnum}`
-- `PUT /api/Procedimento/{procedimentoEnum}?tipoAcessoSolicitante=Administrador`
+## Casos de Uso
 
-### Barbeiros
+### UC-01 - Autenticar usuario
+- Ator: Administrador, Funcionario.
+- Fluxo principal: informar email e senha, validar credenciais, gravar contexto em sessao e redirecionar para home do perfil.
 
-- `GET /api/Barbeiro`
-- `GET /api/Barbeiro/{id}`
-- `POST /api/Barbeiro`
-- `POST /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}?tipoAcessoSolicitante=Funcionario`
-- `DELETE /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Barbeiro/{barbeiroId}/procedimentos/{procedimentoEnum}/preco?precoPorBarbeiro=50&tipoAcessoSolicitante=Funcionario`
+### UC-02 - Realizar logout
+- Ator: qualquer usuario autenticado.
+- Fluxo principal: limpar contexto da sessao e retornar para home publica.
 
-### Clientes
+### UC-03 - Agendamento rápido pela home publica
+- Ator: publico/cliente.
+- Fluxo principal:
+1. Informar CPF e auto preencher dados de cliente ativo.
+2. Selecionar barbeiro e procedimento.
+3. Informar data e hora.
+4. Visualizar resumo e confirmar.
+5. Gerar agendamento com status AguardandoConfirmacaoBarbeiro.
 
-- `GET /api/Cliente/administrador?tipoAcessoSolicitante=Administrador`
-- `GET /api/Cliente/barbeiro/{barbeiroId}?tipoAcessoSolicitante=Funcionario`
-- `GET /api/Cliente/por-cpf?cpf=...`
-- `POST /api/Cliente/barbeiro/{barbeiroId}?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Cliente/barbeiro/{barbeiroId}/{clienteId}?tipoAcessoSolicitante=Funcionario`
-- `PATCH /api/Cliente/barbeiro/{barbeiroId}/{clienteId}/desativar?tipoAcessoSolicitante=Funcionario`
-- `PUT /api/Cliente/administrador/{clienteId}?tipoAcessoSolicitante=Administrador`
-- `PATCH /api/Cliente/administrador/{clienteId}/desativar?tipoAcessoSolicitante=Administrador`
-- `DELETE /api/Cliente/administrador/{clienteId}?tipoAcessoSolicitante=Administrador`
+### UC-04 - Visualizar agendamentos por perfil
+- Ator: Administrador, Funcionario.
+- Fluxo principal: listar agendamentos filtrados conforme permissao do perfil.
 
-## Observacao importante
+### UC-05 - Atualizar status de agendamento
+- Ator: Administrador, Funcionario.
+- Fluxo principal: alterar status respeitando as regras de autorizacao e escopo do agendamento.
 
-Ainda nao existe autenticao/autorizacao real integrada no projeto. Por isso, os endpoints que precisam de regra de acesso recebem `tipoAcessoSolicitante` como parametro para simular a validacao ate a integracao com Identity/JWT.
+### UC-06 - Gerenciar agendamentos (CRUD interno)
+- Ator: Administrador e Funcionario.
+- Fluxo principal: criar, editar e excluir agendamentos, com restricoes para o funcionario atuar apenas no proprio contexto.
 
-## Credenciais de exemplo para desenvolvimento
+### UC-07 - Gerenciar clientes
+- Ator: Administrador e Funcionario.
+- Fluxo principal: cadastrar/editar cliente, vinculando ao barbeiro responsavel.
 
-- Administrador: `admin@navalha.com` / `123456`
-- Funcionario: `funcionario@navalha.com` / `123456`
-- Cliente: `ana@cliente.com` / `123456`
-- Cliente: `bianca@cliente.com` / `123456`
+### UC-08 - Arquivar e reativar clientes
+- Ator: Administrador.
+- Fluxo principal: desativar cliente na operacao e reativar pela tela de arquivados.
 
-## Novas telas
+### UC-09 - Gerenciar procedimentos do catalogo
+- Ator: Administrador.
+- Fluxo principal: criar, editar e excluir procedimento com propagacao para dados relacionados. A consulta do catalogo e liberada para qualquer usuario autenticado ou nao autenticado.
 
-- [Views/Home/Index.cshtml](Views/Home/Index.cshtml) apresenta a barbearia e o formulario de agendamento.
-- [Views/Auth/Login.cshtml](Views/Auth/Login.cshtml) faz o login do barbeiro.
-- [Views/Home/HomeAdministrador.cshtml](Views/Home/HomeAdministrador.cshtml) lista os barbeiros.
-- [Views/Home/HomeFuncionario.cshtml](Views/Home/HomeFuncionario.cshtml) lista os procedimentos do funcionario logado.
-- [Views/Home/HomeCliente.cshtml](Views/Home/HomeCliente.cshtml) mostra dados cadastrais do cliente e seus agendamentos.
+### UC-10 - Personalizar preco por barbeiro
+- Ator: Funcionario.
+- Fluxo principal: ajustar o PrecoPorBarbeiro para procedimento vinculado ao proprio perfil, sem alterar descricao nem PrecoBase.
 
-## Endpoints de agendamento atualizados
+### UC-11 - Gerenciar barbeiros
+- Ator: Administrador.
+- Fluxo principal: criar, editar, listar e excluir barbeiros.
 
-- `GET /api/Agendamento/administrador?tipoAcessoSolicitante=Administrador` retorna todos os agendamentos.
-- `GET /api/Agendamento/funcionario/{barbeiroId}?tipoAcessoSolicitante=Funcionario` retorna os agendamentos do barbeiro logado.
-- `GET /api/Agendamento/cliente?cpf=...&tipoAcessoSolicitante=Cliente` retorna os agendamentos do cliente logado.
-- `GET /api/Agendamento/{idAgendamento}?barbeiroIdSolicitante=...&tipoAcessoSolicitante=...` retorna um agendamento respeitando a regra de acesso.
-- `PUT /api/Agendamento/funcionario/{idAgendamento}?barbeiroIdSolicitante=...` atualiza um agendamento vinculado ao barbeiro logado.
-- `PUT /api/Agendamento/cliente/{idAgendamento}/status?cpfClienteSolicitante=...&status=...` atualiza apenas o status de agendamento do cliente.
+## User Stories (resumo)
+
+- Como administrador, quero visualizar toda a agenda para acompanhar a operacao completa.
+- Como administrador, quero manter o catalogo de procedimentos para padronizar servicos e precos base.
+- Como funcionario, quero ver apenas meus agendamentos para focar no meu atendimento.
+- Como funcionario, quero personalizar meu preco por procedimento para refletir meu posicionamento.
+- Como funcionario, quero cadastrar clientes vinculados a mim para organizar minha carteira.
+- Como cliente, quero agendar rapidamente pela home para reduzir atrito no atendimento.
+- Como cliente, quero consultar meus agendamentos para acompanhar meu historico.
+
+## Como Executar Localmente
+
+1. Restaurar e compilar:
+
+~~~bash
+dotnet build -v minimal
+~~~
+
+2. Executar:
+
+~~~bash
+dotnet run
+~~~
+
+3. Abrir no navegador pela URL exibida no terminal.
+
+## Credenciais de Desenvolvimento
+
+- admin@navalha.com / 123456 (Administrador)
+- funcionario@navalha.com / 123456 (Funcionario)
+
+**Nota:** Acesso de cliente foi removido. Agendamentos sao realizados apenas pelo fluxo publico na home.
+
+## Observacao
+
+Este projeto prioriza didatica e clareza de regra de negocio para estudo e evolucao incremental. Para ambiente produtivo, recomenda-se evoluir autenticacao, persistencia, auditoria e observabilidade.
+
+PAQ -Padrão Ana Julia de Qualidade :D
+Revisado 13/04 15:20
+

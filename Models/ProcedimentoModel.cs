@@ -3,12 +3,13 @@ using Navalha_Barbearia.Enums;
 namespace Navalha_Barbearia.Models
 {
     public class ProcedimentoModel
-    {
+    {        
         private decimal _precoBase;
         private decimal? _precoPorBarbeiro;
         private bool _precoPorBarbeiroPersonalizado;
 
-        public ProcedimentoEnum ProcedimentoEnum { get; set; }
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         // A descricao representa o cadastro padrao do procedimento.
         // Ela e mantida centralizada para evitar duplicidade e divergencia de regra.

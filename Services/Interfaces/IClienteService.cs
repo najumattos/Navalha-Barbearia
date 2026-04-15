@@ -14,6 +14,6 @@ namespace Navalha_Barbearia.Services.Interfaces
         ClienteModel DesativarPorBarbeiro(int clienteId, int barbeiroId, TipoAcessoEnum tipoAcessoSolicitante);
         ClienteModel AtualizarPorAdministrador(int clienteId, ClienteModel cliente, TipoAcessoEnum tipoAcessoSolicitante);
         ClienteModel DesativarPorAdministrador(int clienteId, TipoAcessoEnum tipoAcessoSolicitante);
-        void ExcluirPorAdministrador(int clienteId, TipoAcessoEnum tipoAcessoSolicitante);
+        ClienteModel AtivarPorAdministrador(int clienteId, TipoAcessoEnum tipoAcessoSolicitante);
     }
 }

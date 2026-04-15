@@ -1,0 +1,68 @@
+@model Navalha_Barbearia.Models.BarbeiroModel
+@using Navalha_Barbearia.Models.ViewModels
+
+@{
+    ViewData["Title"] = "Detalhes do barbeiro";
+    var procedimentos = ViewBag.ProcedimentosDoBarbeiro as List<ProcedimentoDoBarbeiroViewModel> ?? new List<ProcedimentoDoBarbeiroViewModel>();
+}
+
+<div class="container py-4">
+    <div class="card-soft p-4 p-md-5 mx-auto" style="max-width: 760px;">
+        <span class="eyebrow">Detalhes</span>
+        <h1 class="h3 mt-3 mb-3">Detalhes do barbeiro</h1>
+        <p class="text-muted">Informacoes completas do profissional cadastrado.</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Id</dt>
+            <dd class="col-sm-8">@Model.Id</dd>
+            <dt class="col-sm-4">Nome</dt>
+            <dd class="col-sm-8">@Model.NomeCompleto</dd>
+            <dt class="col-sm-4">Telefone</dt>
+            <dd class="col-sm-8">@Model.Telefone</dd>
+            <dt class="col-sm-4">Tipo</dt>
+            <dd class="col-sm-8">@Model.TipoAcesso</dd>
+        </dl>
+
+        <hr class="my-4" />
+        <h2 class="h5 mb-3">Procedimentos realizados</h2>
+
+        @if (procedimentos.Count == 0)
+        {
+            <p class="text-muted mb-0">Nenhum procedimento vinculado a este barbeiro.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Nome</th>
+                            <th>Descricao</th>
+                            <th class="text-end">Preco base</th>
+                            <th class="text-end">Preco por barbeiro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var procedimento in procedimentos)
+                        {
+                            <tr>
+                                <td>@procedimento.Id</td>
+                                <td>@procedimento.Nome</td>
+                                <td>@procedimento.Descricao</td>
+                                <td class="text-end">@procedimento.PrecoBase.ToString("C")</td>
+                                <td class="text-end">@procedimento.PrecoPorBarbeiro.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="d-flex gap-2 pt-4">
+            <a class="btn btn-dark" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+            <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.Id">Excluir</a>
+            <a class="btn btn-outline-dark" asp-action="Index">Voltar</a>
+        </div>
+    </div>
+</div>

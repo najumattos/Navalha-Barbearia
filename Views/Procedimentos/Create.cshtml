@@ -13,8 +13,8 @@
             @Html.AntiForgeryToken()
 
             <div class="col-md-6">
-                <label asp-for="ProcedimentoEnum" class="form-label"></label>
-                <select asp-for="ProcedimentoEnum" class="form-select" asp-items="Html.GetEnumSelectList<ProcedimentoEnum>()"></select>
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
             </div>
 
             <div class="col-md-6">

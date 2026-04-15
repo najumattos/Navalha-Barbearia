@@ -9,7 +9,7 @@ namespace Navalha_Barbearia.Models.ViewModels
 
         public string NomeFuncionario { get; set; } = string.Empty;
 
-        public List<ProcedimentoModel> Procedimentos { get; set; } = new();
+        public List<ProcedimentoDoBarbeiroViewModel> ProcedimentosDoBarbeiro { get; set; } = new();
 
         // Lista restrita aos agendamentos do barbeiro logado.
         // Isso reforca a separacao de responsabilidade e evita que a view consulte dados fora do proprio contexto.

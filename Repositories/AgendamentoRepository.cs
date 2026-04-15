@@ -38,6 +38,36 @@ namespace Navalha_Barbearia.Repositories
                 StatusAgendamentoEnum = StatusAgendamentoEnum.Agendado,
                 Preco = 50.00m,
                 Observacao = "Cliente prefere horario da manha."
+            },
+            new AgendamentoModel
+            {
+                IdAgendamento = 2,
+                Cliente = new ClienteModel
+                {
+                    Id = 2,
+                    NomeCompleto = "Bianca Souza",
+                    Telefone = "(11) 96666-1111",
+                    CPF = "987.654.321-00",
+                    Endereco = "Av. Central, 455",
+                    DataNascimento = new DateTime(1989, 11, 3),
+                    GeneroEnum = GeneroEnum.Feminino,
+                    TipoAcesso = TipoAcessoEnum.Cliente,
+                    DataCadastro = DateTime.Now.AddMonths(-1),
+                    Ativo = true
+                },
+                // Mantemos a relacao real entre cliente, barbeiro e procedimento para o seed seguir o mesmo dominio da aplicacao.
+                Barbeiro = new BarbeiroModel
+                {
+                    Id = 1,
+                    NomeCompleto = "Julia Admin",
+                    Telefone = "(11) 99999-1111",
+                    TipoAcesso = TipoAcessoEnum.Administrador
+                },
+                Procedimento = ProcedimentoEnum.Barba,
+                DataHora = DateTime.Now.AddDays(2),
+                StatusAgendamentoEnum = StatusAgendamentoEnum.Pendente,
+                Preco = 35.00m,
+                Observacao = "Agendamento criado para o CPF solicitado."
             }
         ];
 
