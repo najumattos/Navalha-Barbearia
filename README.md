@@ -194,6 +194,10 @@ dotnet run
 
 Este projeto prioriza didatica e clareza de regra de negocio para estudo e evolucao incremental. Para ambiente produtivo, recomenda-se evoluir autenticacao, persistencia, auditoria e observabilidade.
 
+## Arquivo de Index na Raiz
+
+Foi adicionado o arquivo `index.html` na raiz do projeto com uma pagina inicial simples de referencia.
+
 PAQ -Padrão Ana Julia de Qualidade :D
 Revisado 13/04 15:20
 
