@@ -163,6 +163,13 @@
         }
     </div>
     <div class="mt-4 text-center">
-        <a class="btn btn-outline-dark" asp-controller="Agendamentos" asp-action="Index">Voltar para Agendamentos</a>
+        @if (Model?.Origem == "agendamentos")
+        {
+            <a class="btn btn-outline-dark" asp-controller="Agendamentos" asp-action="Index">Voltar</a>
+        }
+        else
+        {
+            <a class="btn btn-outline-dark" asp-controller="Home" asp-action="Index">Voltar</a>
+        }
     </div>
 </div>

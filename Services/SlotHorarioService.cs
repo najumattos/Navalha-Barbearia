@@ -9,6 +9,7 @@ namespace Navalha_Barbearia.Services
     {
         private static readonly List<SlotHorarioModel> _slots = [];
         private static int _proximoId = 1;
+        private static readonly TimeZoneInfo _fusoBrasilia = ObterFusoBrasilia();
 
         private readonly IAgendamentoRepository _agendamentoRepository;
 
@@ -35,13 +36,13 @@ namespace Navalha_Barbearia.Services
                 var inicio = dia.AddHours(8);
                 var fim = dia.AddHours(18);
 
-                for (var horario = inicio; horario < fim; horario = horario.AddMinutes(30))
+                for (var horario = inicio; horario < fim; horario = horario.AddMinutes(60))
                 {
                     slotsExistentes.Add(new SlotHorarioModel
                     {
                         Id = _proximoId++,
                         Inicio = horario,
-                        Fim = horario.AddMinutes(30),
+                        Fim = horario.AddMinutes(60),
                         StatusHorarioEnum = StatusHorarioEnum.Livre,
                         BarbeiroId = barbeiroId
                     });
@@ -59,8 +60,23 @@ namespace Navalha_Barbearia.Services
 
         public List<SlotHorarioModel> ObterSlotsDisponiveis(int barbeiroId, DateTime data)
         {
-            return GerarSlotsDoDia(barbeiroId, data)
+            var slotsLivres = GerarSlotsDoDia(barbeiroId, data)
                 .Where(x => x.StatusHorarioEnum == StatusHorarioEnum.Livre)
+                .ToList();
+
+            var agoraBrasilia = ObterAgoraBrasilia();
+            if (data.Date != agoraBrasilia.Date)
+            {
+                return slotsLivres
+                    .OrderBy(x => x.Inicio)
+                    .ToList();
+            }
+
+            // Regra de UX e negocio: manter pelo menos 1h de antecedencia para novos agendamentos no dia atual.
+            var horarioMinimo = agoraBrasilia.AddHours(1);
+            return slotsLivres
+                .Where(x => x.Inicio >= horarioMinimo)
+                .OrderBy(x => x.Inicio)
                 .ToList();
         }
 
@@ -97,6 +113,30 @@ namespace Navalha_Barbearia.Services
 
                 var ocupado = agendamentosDoDia.Any(x => x.DataHora == slot.Inicio || x.SlotHorarioId == slot.Id);
                 slot.StatusHorarioEnum = ocupado ? StatusHorarioEnum.Ocupado : StatusHorarioEnum.Livre;
+            }
+        }
+
+        private static DateTime ObterAgoraBrasilia()
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _fusoBrasilia);
+        }
+
+        private static TimeZoneInfo ObterFusoBrasilia()
+        {
+            try
+            {
+                return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+            }
+            catch
+            {
+                try
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+                }
+                catch
+                {
+                    return TimeZoneInfo.Local;
+                }
             }
         }
     }

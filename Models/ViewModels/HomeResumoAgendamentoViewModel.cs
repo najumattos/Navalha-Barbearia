@@ -12,5 +12,8 @@ namespace Navalha_Barbearia.Models.ViewModels
         public List<AgendamentoModel> HistoricoRecente { get; set; } = new();
 
         public bool ExibirBotaoConfirmar { get; set; }
+
+        // Indica de onde o usuario veio: "agendamentos" para admin/funcionario, vazio para publico.
+        public string? Origem { get; set; }
     }
 }

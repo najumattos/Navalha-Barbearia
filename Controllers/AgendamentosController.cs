@@ -75,7 +75,7 @@ namespace Navalha_Barbearia.Controllers
         [HttpGet]
         public IActionResult ResumoAgendamento(int idAgendamento)
         {
-            return RedirectToAction(nameof(HomeController.ResumoAgendamento), "Home", new { idAgendamento });
+            return RedirectToAction(nameof(HomeController.ResumoAgendamento), "Home", new { idAgendamento, origem = "agendamentos" });
         }
 
         public IActionResult Create()
@@ -150,6 +150,7 @@ namespace Navalha_Barbearia.Controllers
             }
 
             var slots = _slotHorarioService.ObterSlotsDisponiveis(barbeiroId, data.Date)
+                .Where(x => x.StatusHorarioEnum == StatusHorarioEnum.Livre)
                 .Select(x => new
                 {
                     id = x.Id,

@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Navalha Barbearia";
+    ViewData["BodyClass"] = "home-page";
     // Layout explicito para reduzir ambiguidade e facilitar manutencao por quem esta iniciando.
     Layout = "_LayoutPublic";
 }
@@ -11,17 +12,32 @@
     <div class="container">
         <div class="row g-4 align-items-stretch">
             <div class="col-12 col-lg-5">
-                <div class="hero-panel h-100 p-4 p-lg-5">
-                    <span class="eyebrow">Navalha Barbearia</span>
-                    <h1 class="display-6 fw-semibold mt-3">Bem-vinda a uma experiencia simples, elegante e objetiva.</h1>
-                    <p class="text-muted mt-3 mb-4">
-                        Um ponto de encontro para cortes, barba e cuidados pessoais com atendimento claro e organizado.
-                    </p>
+                <div class="calendar-card h-100 p-4 p-lg-5">
+                    <div class="calendar-header d-flex align-items-center justify-content-between gap-3 mb-4">
+                        <button type="button" class="calendar-nav-btn" id="calendar-prev" aria-label="Mes anterior">
+                            <span aria-hidden="true">&lsaquo;</span>
+                        </button>
 
-                    <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-dark btn-lg px-4" asp-controller="Auth" asp-action="Login">Ir para Login</a>
-                        <a class="btn btn-outline-dark btn-lg px-4" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <div class="text-center flex-grow-1">
+                            <span class="eyebrow">Agendamento rapido</span>
+                            <h1 class="calendar-month-title h3 mt-2 mb-0" id="calendar-month-title">Abril 2026</h1>
+                            <p class="calendar-selected-date text-muted mb-0" id="calendar-selected-label">Selecione uma data no calendario</p>
+                        </div>
+
+                        <button type="button" class="calendar-nav-btn" id="calendar-next" aria-label="Proximo mes">
+                            <span aria-hidden="true">&rsaquo;</span>
+                        </button>
                     </div>
+
+                    <div class="calendar-grid" id="calendar-grid" aria-label="Calendario de agendamento"></div>
+
+                    <div class="calendar-slots mt-4">
+                        <span class="eyebrow">Horarios disponiveis</span>
+                        <div class="calendar-slot-list mt-2" id="calendar-slots-list" aria-live="polite"></div>
+                        <p class="text-muted small mb-0 mt-2" id="calendar-slots-empty"></p>
+                    </div>
+
+                    <input asp-for="DataSelecionada" type="hidden" class="form-control" id="data-select" value="@Model.DataSelecionada.ToString("yyyy-MM-dd")" />
                 </div>
             </div>
 
@@ -79,15 +95,15 @@
                         </div>
 
                         <div class="col-12 col-md-6">
-                            <label asp-for="DataSelecionada" class="form-label">Data</label>
-                            <input asp-for="DataSelecionada" type="date" class="form-control" id="data-select" />
+                            <label class="form-label">Data selecionada</label>
+                            <input class="form-control" id="data-display" readonly />
                         </div>
 
                         <div class="col-12 col-md-6">
                             <label asp-for="Agendamento.SlotHorarioId" class="form-label">Horario disponivel</label>
                             <select asp-for="Agendamento.SlotHorarioId" class="form-select" id="slot-select">
                                 <option value="">Selecione</option>
-                                @foreach (var slot in Model.SlotsDisponiveis)
+                                @foreach (var slot in Model.SlotsDisponiveis.Where(x => x.StatusHorarioEnum == Navalha_Barbearia.Enums.StatusHorarioEnum.Livre))
                                 {
                                     <option value="@slot.Id">@slot.Inicio.ToString("HH:mm") - @slot.Fim.ToString("HH:mm")</option>
                                 }
@@ -116,6 +132,8 @@
 </div>
 
 <script>
+    // O calendario controla a mesma data usada pelo formulario, sem alterar a regra de negocio.
+    // A selecao apenas atualiza o campo oculto e dispara o fluxo ja existente de slots.
     // Regras simples de UI: atualiza o preco conforme barbeiro + procedimento selecionados.
     // Codigo limpo: funcao curta, nomes sem abreviacao e comportamento previsivel.
     (function () {
@@ -125,9 +143,153 @@
         const precoInput = document.getElementById("preco-input");
         const dataSelect = document.getElementById("data-select");
         const slotSelect = document.getElementById("slot-select");
+        const calendarGrid = document.getElementById("calendar-grid");
+        const calendarMonthTitle = document.getElementById("calendar-month-title");
+        const calendarSelectedLabel = document.getElementById("calendar-selected-label");
+        const calendarPrev = document.getElementById("calendar-prev");
+        const calendarNext = document.getElementById("calendar-next");
+        const dataDisplay = document.getElementById("data-display");
+        const calendarSlotsList = document.getElementById("calendar-slots-list");
+        const calendarSlotsEmpty = document.getElementById("calendar-slots-empty");
 
-        if (!barbeiroSelect || !procedimentoSelect || !precoInput || !dataSelect || !slotSelect) {
+        if (!barbeiroSelect || !procedimentoSelect || !precoInput || !dataSelect || !slotSelect || !calendarGrid || !calendarMonthTitle || !calendarSelectedLabel || !calendarPrev || !calendarNext || !calendarSlotsList || !calendarSlotsEmpty) {
             return;
+        }
+
+        const nomesMeses = [
+            "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        const nomesDias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+        const hoje = new Date();
+        const hojeNormalizado = normalizarDataLocal(hoje);
+
+        function obterDataInicial() {
+            const dataDoCampo = valorParaData(dataSelect.value);
+            if (dataDoCampo) {
+                return dataDoCampo;
+            }
+
+            return new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1);
+        }
+
+        const dataInicial = obterDataInicial();
+        let mesAtual = new Date(dataInicial.getFullYear(), dataInicial.getMonth(), 1);
+
+        function formatarDataVisual(data) {
+            return data.toLocaleDateString("pt-BR", {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+            });
+        }
+
+        function formatarDataCurta(data) {
+            return data.toLocaleDateString("pt-BR");
+        }
+
+        function normalizarDataLocal(data) {
+            return new Date(data.getFullYear(), data.getMonth(), data.getDate());
+        }
+
+        function dataParaValor(data) {
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, "0");
+            const dia = String(data.getDate()).padStart(2, "0");
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        function valorParaData(valor) {
+            if (!valor) {
+                return null;
+            }
+
+            const texto = String(valor).trim();
+            const isoMatch = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (!isoMatch) {
+                return null;
+            }
+
+            const ano = Number(isoMatch[1]);
+            const mes = Number(isoMatch[2]);
+            const dia = Number(isoMatch[3]);
+            const data = new Date(ano, mes - 1, dia);
+
+            return Number.isNaN(data.getTime()) ? null : data;
+        }
+
+        function atualizarDataSelecionada(data) {
+            const dataNormalizada = normalizarDataLocal(data);
+            dataSelect.value = dataParaValor(dataNormalizada);
+            mesAtual = new Date(dataNormalizada.getFullYear(), dataNormalizada.getMonth(), 1);
+            if (dataDisplay) {
+                dataDisplay.value = formatarDataCurta(dataNormalizada);
+            }
+
+            calendarSelectedLabel.textContent = formatarDataVisual(dataNormalizada);
+            dataSelect.dispatchEvent(new Event("change"));
+        }
+
+        function renderizarCalendario() {
+            const ano = mesAtual.getFullYear();
+            const mes = mesAtual.getMonth();
+            const dataSelecionada = valorParaData(dataSelect.value) || dataInicial;
+
+            calendarMonthTitle.textContent = `${nomesMeses[mes]} ${ano}`;
+            calendarGrid.innerHTML = "";
+
+            for (const dia of nomesDias) {
+                const cabecalho = document.createElement("div");
+                cabecalho.className = "calendar-weekday";
+                cabecalho.textContent = dia;
+                calendarGrid.appendChild(cabecalho);
+            }
+
+            const primeiroDia = new Date(ano, mes, 1);
+            const inicioGrade = new Date(ano, mes, 1 - primeiroDia.getDay());
+
+            for (let indice = 0; indice < 42; indice++) {
+                const diaAtual = new Date(inicioGrade);
+                diaAtual.setDate(inicioGrade.getDate() + indice);
+
+                const botaoDia = document.createElement("button");
+                botaoDia.type = "button";
+                botaoDia.className = "calendar-day";
+                botaoDia.textContent = String(diaAtual.getDate());
+
+                const pertenceAoMes = diaAtual.getMonth() === mes;
+                const ehSelecionado = dataParaValor(diaAtual) === dataParaValor(dataSelecionada);
+                const diaAtualNormalizado = normalizarDataLocal(diaAtual);
+                const ehPassado = diaAtualNormalizado < hojeNormalizado;
+                const ehHoje = dataParaValor(diaAtual) === dataParaValor(hojeNormalizado);
+
+                if (!pertenceAoMes) {
+                    botaoDia.classList.add("outside-month");
+                }
+
+                if (ehPassado) {
+                    botaoDia.disabled = true;
+                    botaoDia.classList.add("disabled-day");
+                }
+
+                if (ehSelecionado) {
+                    botaoDia.classList.add("selected");
+                }
+
+                if (ehHoje) {
+                    botaoDia.classList.add("today");
+                }
+
+                botaoDia.addEventListener("click", () => {
+                    atualizarDataSelecionada(diaAtual);
+                    mesAtual = new Date(diaAtual.getFullYear(), diaAtual.getMonth(), 1);
+                    renderizarCalendario();
+                });
+
+                calendarGrid.appendChild(botaoDia);
+            }
         }
 
         function atualizarPreco() {
@@ -149,9 +311,71 @@
             }
         }
 
+        function renderizarSlotsNoCalendario(slots, slotSelecionado, mensagemVazia) {
+            calendarSlotsList.innerHTML = "";
+
+            if (!slots || slots.length === 0) {
+                calendarSlotsEmpty.textContent = mensagemVazia || "Nao ha horarios disponiveis para esta data.";
+                return;
+            }
+
+            calendarSlotsEmpty.textContent = "";
+
+            for (const slot of slots) {
+                const botao = document.createElement("button");
+                botao.type = "button";
+                botao.className = "calendar-slot-chip";
+                botao.textContent = `${slot.inicioFormatado} - ${slot.fimFormatado}`;
+                botao.dataset.slotId = String(slot.id);
+
+                if (String(slot.id) === String(slotSelecionado)) {
+                    botao.classList.add("selected");
+                }
+
+                botao.addEventListener("click", () => {
+                    slotSelect.value = String(slot.id);
+                    slotSelect.dispatchEvent(new Event("change"));
+                });
+
+                calendarSlotsList.appendChild(botao);
+            }
+        }
+
+        function sincronizarSelecaoVisualDosSlots() {
+            const slotSelecionado = slotSelect.value;
+            const chips = calendarSlotsList.querySelectorAll(".calendar-slot-chip");
+
+            for (const chip of chips) {
+                chip.classList.toggle("selected", chip.dataset.slotId === String(slotSelecionado));
+            }
+        }
+
         barbeiroSelect.addEventListener("change", atualizarPreco);
         procedimentoSelect.addEventListener("change", atualizarPreco);
         atualizarPreco();
+
+        calendarPrev.addEventListener("click", () => {
+            mesAtual = new Date(mesAtual.getFullYear(), mesAtual.getMonth() - 1, 1);
+            renderizarCalendario();
+        });
+
+        calendarNext.addEventListener("click", () => {
+            mesAtual = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 1);
+            renderizarCalendario();
+        });
+
+        dataSelect.addEventListener("change", () => {
+            const dataAtual = valorParaData(dataSelect.value);
+            if (dataAtual) {
+                mesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
+                dataDisplay && (dataDisplay.value = formatarDataCurta(dataAtual));
+                calendarSelectedLabel.textContent = formatarDataVisual(dataAtual);
+            }
+            renderizarCalendario();
+        });
+
+        atualizarDataSelecionada(valorParaData(dataSelect.value) || dataInicial);
+        renderizarCalendario();
 
         async function carregarSlots() {
             const barbeiroId = barbeiroSelect.value;
@@ -161,12 +385,14 @@
             slotSelect.innerHTML = '<option value="">Selecione</option>';
 
             if (!barbeiroId || !data) {
+                renderizarSlotsNoCalendario([], null, "Selecione barbeiro e data para visualizar os horarios.");
                 return;
             }
 
             try {
                 const resposta = await fetch(`/Home/BuscarSlotsDisponiveis?barbeiroId=${encodeURIComponent(barbeiroId)}&data=${encodeURIComponent(data)}`);
                 if (!resposta.ok) {
+                    renderizarSlotsNoCalendario([], null, "Nao foi possivel carregar os horarios no momento.");
                     return;
                 }
 
@@ -178,7 +404,10 @@
                     option.selected = String(slot.id) === String(slotSelecionado);
                     slotSelect.appendChild(option);
                 }
+
+                renderizarSlotsNoCalendario(slots, slotSelecionado);
             } catch {
+                renderizarSlotsNoCalendario([], null, "Nao foi possivel carregar os horarios no momento.");
                 // Sem interromper o restante do formulario.
             }
         }
@@ -220,6 +449,7 @@
             carregarSlots();
         });
         dataSelect.addEventListener("change", carregarSlots);
+        slotSelect.addEventListener("change", sincronizarSelecaoVisualDosSlots);
         carregarProcedimentos();
         carregarSlots();
 

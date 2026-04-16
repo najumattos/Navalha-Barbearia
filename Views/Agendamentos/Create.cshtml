@@ -73,7 +73,7 @@
                 <label asp-for="Agendamento.SlotHorarioId" class="form-label">Horario disponivel</label>
                 <select asp-for="Agendamento.SlotHorarioId" class="form-select" id="slot-select">
                     <option value="">Selecione</option>
-                    @foreach (var slot in Model.SlotsDisponiveis)
+                    @foreach (var slot in Model.SlotsDisponiveis.Where(x => x.StatusHorarioEnum == Navalha_Barbearia.Enums.StatusHorarioEnum.Livre))
                     {
                         <option value="@slot.Id">@slot.Inicio.ToString("HH:mm") - @slot.Fim.ToString("HH:mm")</option>
                     }
