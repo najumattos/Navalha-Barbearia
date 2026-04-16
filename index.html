@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Navalha Barbearia</title>
+  <style>
+    :root {
+      --fundo: #f5f3ef;
+      --texto: #1f1f1f;
+      --destaque: #2f5d50;
+      --card: #ffffff;
+      --borda: #e6e0d7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top right, #fff8ee, var(--fundo));
+      color: var(--texto);
+    }
+
+    main {
+      width: min(680px, 100%);
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+    }
+
+    p {
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    a {
+      color: var(--destaque);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      background: #f1efe9;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Navalha Barbearia</h1>
+    <p>Arquivo de index na raiz do projeto.</p>
+    <p>
+      Para iniciar a aplicacao ASP.NET Core MVC, execute
+      <code>dotnet run</code> na pasta do projeto.
+    </p>
+    <p>
+      A documentacao principal esta em
+      <a href="./README.md">README.md</a>.
+    </p>
+  </main>
+</body>
+</html>

@@ -31,11 +31,11 @@ namespace Navalha_Barbearia.Controllers
                 return View(loginRequest);
             }
 
-            var login = _loginService.Autenticar(loginRequest.Email, loginRequest.Senha);
+            var login = _loginService.Autenticar(loginRequest.Identificador, loginRequest.Senha);
             if (login is null)
             {
                 // Feedback claro evita ambiguidade para usuaria e para manutencao futura.
-                ModelState.AddModelError(string.Empty, "E-mail ou senha invalidos.");
+                ModelState.AddModelError(string.Empty, "E-mail/CPF ou senha invalidos.");
                 return View(loginRequest);
             }
 
@@ -50,6 +50,11 @@ namespace Navalha_Barbearia.Controllers
             if (login.TipoAcessoEnum == TipoAcessoEnum.Administrador)
             {
                 return RedirectToAction("HomeAdministrador", "Home", new { idBarbeiro = login.IdBarbeiro ?? 0 });
+            }
+
+            if (login.TipoAcessoEnum == TipoAcessoEnum.Cliente)
+            {
+                return RedirectToAction("Index", "Agendamentos");
             }
 
             ModelState.AddModelError(string.Empty, "Perfil nao tem permissao de acesso.");

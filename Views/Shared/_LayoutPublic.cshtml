@@ -1,3 +1,8 @@
+@{
+    var bodyClass = ViewData["BodyClass"]?.ToString();
+    var isLoginPage = string.Equals(bodyClass, "login-page", StringComparison.OrdinalIgnoreCase);
+}
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,8 +12,11 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Navalha_Barbearia.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body class="@bodyClass">
+@if (!isLoginPage)
+{
     <header class="site-header">
         <nav class="navbar navbar-expand-sm navbar-light py-3">
             <div class="container-fluid">
@@ -36,6 +44,11 @@
     <footer class="footer border-top text-muted">
         <div class="container">&copy; 2026 - Navalha Barbearia</div>
     </footer>
+}
+else
+{
+    @RenderBody()
+}
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

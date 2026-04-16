@@ -22,6 +22,11 @@ namespace Navalha_Barbearia.Controllers
         public IActionResult Index()
         {
             var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso == TipoAcessoEnum.Cliente)
+            {
+                return Forbid();
+            }
+
             var exibirColunasFuncionario = tipoAcesso == TipoAcessoEnum.Funcionario;
             var vinculosFuncionario = new Dictionary<int, VinculoProcedimentoFuncionarioViewModel>();
 
@@ -125,6 +130,11 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Details(int id)
         {
+            if (_usuarioContextoService.ObterTipoAcesso() == TipoAcessoEnum.Cliente)
+            {
+                return Forbid();
+            }
+
             var procedimento = _procedimentoService.ObterPorId(id);
             if (procedimento is null)
             {

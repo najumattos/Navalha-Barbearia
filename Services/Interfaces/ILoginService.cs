@@ -4,7 +4,7 @@ namespace Navalha_Barbearia.Services.Interfaces
 {
     public interface ILoginService
     {
-        LoginModel? Autenticar(string email, string senha);
+        LoginModel? Autenticar(string identificador, string senha);
         LoginModel? ObterPorBarbeiroId(int idBarbeiro);
         LoginModel? ObterPorClienteId(int idCliente);
     }

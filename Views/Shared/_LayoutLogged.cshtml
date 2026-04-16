@@ -1,10 +1,29 @@
 @using Navalha_Barbearia.Enums
 @using Navalha_Barbearia.Services.Interfaces
 @inject IUsuarioContextoService UsuarioContexto
+@inject IBarbeiroService BarbeiroService
+@inject IClienteService ClienteService
 
 @{
     var tipoAcesso = UsuarioContexto.ObterTipoAcesso();
     var controllerAtual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var nomeCompletoUsuario = string.Empty;
+
+    try
+    {
+        if ((tipoAcesso == TipoAcessoEnum.Administrador || tipoAcesso == TipoAcessoEnum.Funcionario) && UsuarioContexto.ObterIdBarbeiro().HasValue)
+        {
+            nomeCompletoUsuario = BarbeiroService.ObterPorId(UsuarioContexto.ObterIdBarbeiro()!.Value)?.NomeCompleto ?? string.Empty;
+        }
+        else if (tipoAcesso == TipoAcessoEnum.Cliente && UsuarioContexto.ObterIdCliente().HasValue)
+        {
+            nomeCompletoUsuario = ClienteService.ObterPerfilCliente(UsuarioContexto.ObterIdCliente()!.Value, TipoAcessoEnum.Cliente).NomeCompleto;
+        }
+    }
+    catch
+    {
+        nomeCompletoUsuario = string.Empty;
+    }
 }
 
 <!DOCTYPE html>
@@ -19,14 +38,14 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Navalha_Barbearia.styles.css" asp-append-version="true" />
 </head>
-<body class="logged-layout">
+<body class="logged-layout @((tipoAcesso == TipoAcessoEnum.Administrador || tipoAcesso == TipoAcessoEnum.Funcionario) ? "barbeiro-layout" : string.Empty)">
     <div class="container-fluid">
         <div class="row g-0 min-vh-100">
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block collapse custom-sidebar">
                 <div class="d-flex flex-column h-100">
                     <div class="sidebar-brand-block">
                         <a class="sidebar-brand" asp-controller="Home" asp-action="Index">Navalha Barbearia</a>
-                        <span class="sidebar-caption">Painel logado</span>
+                        <span class="sidebar-caption">@(string.IsNullOrWhiteSpace(nomeCompletoUsuario) ? "Painel logado" : $"Ola, {nomeCompletoUsuario}")</span>
                     </div>
 
                     <div class="sidebar-nav flex-grow-1">
@@ -76,12 +95,7 @@
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @(controllerAtual == "Agendamentos" ? "active" : string.Empty)" asp-controller="Agendamentos" asp-action="Index">
-                                        <i class="bi bi-calendar-check me-2"></i>Meus Agendamentos
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link @(controllerAtual == "Procedimentos" ? "active" : string.Empty)" asp-controller="Procedimentos" asp-action="Index">
-                                        <i class="bi bi-journal-text me-2"></i>Procedimentos
+                                        <i class="bi bi-calendar-check me-2"></i>Meu Historico
                                     </a>
                                 </li>
                             }

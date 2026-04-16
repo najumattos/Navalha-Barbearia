@@ -88,7 +88,7 @@ namespace Navalha_Barbearia.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResumoAgendamento(int idAgendamento)
+        public IActionResult ResumoAgendamento(int idAgendamento, string? origem = null)
         {
             var agendamentoAtual = _agendamentoService.ObterPorId(idAgendamento, 0, TipoAcessoEnum.Administrador);
             if (agendamentoAtual is null)
@@ -108,7 +108,8 @@ namespace Navalha_Barbearia.Controllers
                 Cliente = cliente,
                 AgendamentoAtual = agendamentoAtual,
                 HistoricoRecente = historicoRecente,
-                ExibirBotaoConfirmar = false
+                ExibirBotaoConfirmar = false,
+                Origem = origem
             });
         }
 
@@ -405,6 +406,7 @@ namespace Navalha_Barbearia.Controllers
             }
 
             var slots = _slotHorarioService.ObterSlotsDisponiveis(barbeiroId, data.Date)
+                .Where(x => x.StatusHorarioEnum == StatusHorarioEnum.Livre)
                 .Select(x => new
                 {
                     id = x.Id,

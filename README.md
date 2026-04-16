@@ -4,11 +4,12 @@ Aplicacao ASP.NET Core MVC (.NET 8) para gestao de barbearia, com foco em separa
 
 ## Visao Geral
 
-O sistema atende dois perfis principais com acesso ao login:
+O sistema atende tres perfis com acesso ao login:
 - Administrador
 - Funcionario (barbeiro)
+- Cliente
 
-Clientes nao possuem acesso ao login do sistema. O agendamento no fluxo publico continua disponivel sem autenticacao.
+O agendamento no fluxo publico continua disponivel sem autenticacao.
 
 O projeto segue arquitetura em camadas:
 - Controllers: orquestracao das requisicoes HTTP.
@@ -44,9 +45,9 @@ O projeto segue arquitetura em camadas:
 ### RN de controle de acesso
 - RN-01: Somente Administrador pode visualizar todos os agendamentos.
 - RN-02: Funcionario visualiza e altera apenas agendamentos vinculados ao seu proprio Id.
-- RN-03: Agendamento publico (sem login) permite clientes agendarem rapidamente, sem acesso posterior a dashboard; historico de agendamentos fica disponivel apenas em resumo publico por ID de agendamento.
+- RN-03: Agendamento publico (sem login) permite clientes agendarem rapidamente; quando autenticado, o cliente acessa apenas sua pagina de historico de agendamentos, em modo somente leitura com visualizacao do status.
 - RN-04: Qualquer usuario pode visualizar o catalogo de procedimentos; somente Administrador cria, edita e exclui procedimentos do catalogo. O cadastro usa `Id` e `Nome` no lugar de um enum de procedimento.
-- RN-29: Apenas Administrador e Funcionario podem fazer login no sistema. Clientes nao tem acesso ao painel autenticado.
+- RN-29: Cliente faz login com CPF para consultar apenas o proprio historico de agendamentos em uma unica pagina de leitura, incluindo o status de cada agendamento.
 
 ### RN de clientes
 - RN-05: Todo cliente cadastrado recebe TipoAcesso = Cliente.
@@ -96,8 +97,8 @@ O projeto segue arquitetura em camadas:
 
 ### Cliente
 - Objetivo: agendar servico.
-- Interesses: facilidade para agendar e visibilidade de resumo de agendamento.
-- Acoes principais: agendar via home publica, consultar resumo de agendamento por link publico.
+- Interesses: facilidade para agendar e visibilidade do historico de atendimentos.
+- Acoes principais: agendar via home publica, fazer login e consultar historico proprio de agendamentos.
 
 ### Dono/Gestor da Barbearia (Seu Zé Lucas Alexandrino)
 - Objetivo: ganho de organizacao operacional e controle do atendimento.
@@ -107,7 +108,7 @@ O projeto segue arquitetura em camadas:
 ## Casos de Uso
 
 ### UC-01 - Autenticar usuario
-- Ator: Administrador, Funcionario.
+- Ator: Administrador, Funcionario, Cliente.
 - Fluxo principal: informar email e senha, validar credenciais, gravar contexto em sessao e redirecionar para home do perfil.
 
 ### UC-02 - Realizar logout
@@ -124,7 +125,7 @@ O projeto segue arquitetura em camadas:
 5. Gerar agendamento com status AguardandoConfirmacaoBarbeiro.
 
 ### UC-04 - Visualizar agendamentos por perfil
-- Ator: Administrador, Funcionario.
+- Ator: Administrador, Funcionario, Cliente.
 - Fluxo principal: listar agendamentos filtrados conforme permissao do perfil.
 
 ### UC-05 - Atualizar status de agendamento
@@ -185,12 +186,17 @@ dotnet run
 
 - admin@navalha.com / 123456 (Administrador)
 - funcionario@navalha.com / 123456 (Funcionario)
+- 123.456.789-00 / 123456 (Cliente)
 
-**Nota:** Acesso de cliente foi removido. Agendamentos sao realizados apenas pelo fluxo publico na home.
+**Nota:** O perfil Cliente possui acesso apenas a tela de historico de agendamentos, sem acoes de gerenciamento; a tela exibe o status de cada agendamento em modo somente leitura.
 
 ## Observacao
 
 Este projeto prioriza didatica e clareza de regra de negocio para estudo e evolucao incremental. Para ambiente produtivo, recomenda-se evoluir autenticacao, persistencia, auditoria e observabilidade.
+
+## Arquivo de Index na Raiz
+
+Foi adicionado o arquivo `index.html` na raiz do projeto com uma pagina inicial simples de referencia.
 
 PAQ -Padrão Ana Julia de Qualidade :D
 Revisado 13/04 15:20
