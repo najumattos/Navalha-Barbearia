@@ -420,6 +420,409 @@ body.home-page .booking-card .form-select {
   font-weight: 600;
 }
 
+/* Layout visual dedicado ao barbeiro: topo horizontal com navegação destacada. */
+body.logged-layout.barbeiro-layout {
+  background: #efeff1;
+}
+
+body.logged-layout.barbeiro-layout .container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+body.logged-layout.barbeiro-layout .row.g-0.min-vh-100 {
+  display: block;
+  min-height: 100vh;
+}
+
+body.logged-layout.barbeiro-layout #sidebarMenu.custom-sidebar {
+  min-height: auto;
+  width: 100%;
+  max-width: none;
+  border-right: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: block !important;
+}
+
+body.logged-layout.barbeiro-layout #sidebarMenu .d-flex.flex-column.h-100 {
+  display: grid !important;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand footer"
+    "nav nav";
+  align-items: stretch;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-brand-block {
+  grid-area: brand;
+  margin: 0;
+  border: 0;
+  padding: 1.15rem 4rem;
+  background: #111214;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-brand {
+  color: #f1be2f;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-brand:hover {
+  color: #ffd45e;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-caption {
+  color: rgba(241, 190, 47, 0.74);
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-footer {
+  grid-area: footer;
+  margin: 0;
+  border: 0;
+  padding: 1.15rem 4rem 1.15rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: #111214;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-footer .d-grid {
+  display: block !important;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-footer .btn-light {
+  background: #f1be2f;
+  border-color: #f1be2f;
+  color: #111214;
+  font-weight: 700;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.9rem;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-nav {
+  grid-area: nav;
+  background: #efeff1;
+  padding: 1.05rem 4rem;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-nav .nav {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 0.7rem !important;
+}
+
+body.logged-layout.barbeiro-layout .sidebar-nav .nav-item {
+  margin: 0;
+}
+
+body.logged-layout.barbeiro-layout .custom-sidebar .nav-link {
+  border-radius: 0.45rem;
+  padding: 0.62rem 1.25rem;
+  font-weight: 600;
+  color: #121316;
+  background: #ececef;
+  border: 1px solid transparent;
+  transform: none;
+}
+
+body.logged-layout.barbeiro-layout .custom-sidebar .nav-link:hover,
+body.logged-layout.barbeiro-layout .custom-sidebar .nav-link:focus {
+  color: #121316;
+  background: #e3e3e8;
+  border-color: #cbccd2;
+  transform: none;
+}
+
+body.logged-layout.barbeiro-layout .custom-sidebar .nav-link.active {
+  color: #121316;
+  background: #e5bb4e;
+  border-color: #ddb247;
+  box-shadow: none;
+}
+
+body.logged-layout.barbeiro-layout .custom-sidebar .nav-link i {
+  color: #121316;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0 !important;
+  padding: 1.25rem 4rem 1.75rem;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 {
+  padding-top: 1.5rem !important;
+  padding-bottom: 2rem !important;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 {
+  gap: 1rem;
+  padding: 1.35rem 1.4rem;
+  margin-bottom: 1.15rem !important;
+  background: #e9e5de;
+  border: 1px solid rgba(18, 19, 22, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(18, 19, 22, 0.08);
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 .eyebrow {
+  color: #8c6419;
+  letter-spacing: 0.14em;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 .h3,
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 h1,
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 h2 {
+  color: #111214;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .card-soft,
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .card,
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 .table-responsive {
+  background: #ececef;
+  border: 1px solid #c7c8ce;
+  border-radius: 1rem;
+  box-shadow: 0 10px 22px rgba(18, 19, 22, 0.06);
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .table thead th {
+  color: #6e511a;
+  border-bottom-color: #9a7a38;
+  background: transparent;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .table td,
+body.logged-layout.barbeiro-layout .custom-main-content .table th {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .table {
+  margin-bottom: 0;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .form-label {
+  color: #2a2c31;
+  font-weight: 600;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .form-control,
+body.logged-layout.barbeiro-layout .custom-main-content .form-select,
+body.logged-layout.barbeiro-layout .custom-main-content textarea {
+  border-color: #c9cbd2;
+  background: #f8f8fa;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .form-control:focus,
+body.logged-layout.barbeiro-layout .custom-main-content .form-select:focus,
+body.logged-layout.barbeiro-layout .custom-main-content textarea:focus {
+  border-color: #ddb247;
+  box-shadow: 0 0 0 0.2rem rgba(229, 187, 78, 0.18);
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .table tbody tr:hover {
+  background: rgba(229, 187, 78, 0.14);
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-dark {
+  background: #141518;
+  border-color: #141518;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-dark:hover {
+  background: #0e0f11;
+  border-color: #0e0f11;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-outline-dark {
+  border-color: #141518;
+  color: #141518;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-outline-dark:hover {
+  background: #141518;
+  border-color: #141518;
+  color: #ffffff;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-danger {
+  background: #7a1f1f;
+  border-color: #7a1f1f;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-danger:hover {
+  background: #651919;
+  border-color: #651919;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .btn-sm {
+  border-radius: 999px;
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .table .btn-sm {
+  min-width: 88px;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .text-muted {
+  color: #625946 !important;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > * + * {
+  margin-top: 1rem;
+}
+
+body.logged-layout.barbeiro-layout .custom-main-content .card-soft,
+body.logged-layout.barbeiro-layout .custom-main-content .card,
+body.logged-layout.barbeiro-layout .custom-main-content .table-responsive {
+  padding: 0.75rem;
+}
+
+body.logged-layout.barbeiro-layout .dropcard-toggle {
+  border: 0;
+  border-radius: 0;
+  padding: 0.85rem 1rem;
+  color: #1a1d22;
+  font-weight: 600;
+  text-align: left;
+  background: transparent;
+}
+
+body.logged-layout.barbeiro-layout .dropcard-toggle:hover,
+body.logged-layout.barbeiro-layout .dropcard-toggle:focus {
+  color: #1a1d22;
+  background: rgba(229, 187, 78, 0.12);
+  box-shadow: none;
+}
+
+body.logged-layout.barbeiro-layout .dropcard-icon {
+  transition: transform 0.2s ease;
+}
+
+body.logged-layout.barbeiro-layout .dropcard-toggle[aria-expanded="true"] .dropcard-icon {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 991.98px) {
+  body.logged-layout.barbeiro-layout .sidebar-brand-block,
+  body.logged-layout.barbeiro-layout .sidebar-footer,
+  body.logged-layout.barbeiro-layout .sidebar-nav,
+  body.logged-layout.barbeiro-layout .custom-main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  body.logged-layout.barbeiro-layout .logged-mobile-bar {
+    display: none !important;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.logged-layout.barbeiro-layout #sidebarMenu .d-flex.flex-column.h-100 {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand footer"
+      "nav nav";
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-brand-block {
+    padding: 0.8rem 0.9rem;
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-brand {
+    font-size: 1.55rem;
+    line-height: 1.1;
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-caption {
+    display: none;
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-footer {
+    padding: 0.8rem 0.9rem 0.8rem 0.5rem;
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-nav {
+    padding: 0.7rem 0.8rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  body.logged-layout.barbeiro-layout .sidebar-nav .nav {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-sidebar .nav-link {
+    padding: 0.52rem 0.8rem;
+    font-size: 0.92rem;
+    white-space: nowrap;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content {
+    padding: 0.9rem 0.85rem 1.25rem;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 {
+    padding-top: 0.85rem !important;
+    padding-bottom: 1.2rem !important;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+    padding: 0.9rem;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .container.py-4 > .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+    width: 100%;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .card-soft,
+  body.logged-layout.barbeiro-layout .custom-main-content .card,
+  body.logged-layout.barbeiro-layout .custom-main-content .table-responsive {
+    padding: 0.45rem;
+    border-radius: 0.85rem;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .table {
+    min-width: 640px;
+    font-size: 0.9rem;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .table thead th {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .table .btn-sm {
+    min-width: 80px;
+    font-size: 0.78rem;
+  }
+
+  body.logged-layout.barbeiro-layout .custom-main-content .form-control,
+  body.logged-layout.barbeiro-layout .custom-main-content .form-select {
+    min-height: 42px;
+  }
+}
+
 .custom-main-content {
   padding-top: 1rem;
   padding-bottom: 1.5rem;

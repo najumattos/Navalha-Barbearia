@@ -9,93 +9,129 @@
     <h1 class="h3 mb-4">Painel do Administrador</h1>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white fw-semibold">Barbeiros cadastrados</div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nome</th>
-                        <th>Telefone</th>
-                        <th>Tipo de acesso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var barbeiro in Model.Barbeiros)
-                    {
+        <div class="card-header bg-white fw-semibold p-0">
+            <button class="dropcard-toggle btn w-100 d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#admin-barbeiros-dropcard"
+                    aria-expanded="false"
+                    aria-controls="admin-barbeiros-dropcard">
+                <span>Barbeiros cadastrados</span>
+                <i class="bi bi-chevron-down dropcard-icon" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div id="admin-barbeiros-dropcard" class="collapse">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@barbeiro.Id</td>
-                            <td>@barbeiro.NomeCompleto</td>
-                            <td>@barbeiro.Telefone</td>
-                            <td>@barbeiro.TipoAcesso</td>
+                            <th>Id</th>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Tipo de acesso</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var barbeiro in Model.Barbeiros)
+                        {
+                            <tr>
+                                <td>@barbeiro.Id</td>
+                                <td>@barbeiro.NomeCompleto</td>
+                                <td>@barbeiro.Telefone</td>
+                                <td>@barbeiro.TipoAcesso</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="card border-0 shadow-sm mt-4">
-        <div class="card-header bg-white fw-semibold">Todos os agendamentos</div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Barbeiro</th>
-                        <th>Procedimento</th>
-                        <th>Data</th>
-                        <th>Status</th>
-                        <th>Preco</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var agendamento in Model.Agendamentos)
-                    {
+        <div class="card-header bg-white fw-semibold p-0">
+            <button class="dropcard-toggle btn w-100 d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#admin-agendamentos-dropcard"
+                    aria-expanded="false"
+                    aria-controls="admin-agendamentos-dropcard">
+                <span>Todos os agendamentos</span>
+                <i class="bi bi-chevron-down dropcard-icon" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div id="admin-agendamentos-dropcard" class="collapse">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@agendamento.Cliente.NomeCompleto</td>
-                            <td>@agendamento.Barbeiro.NomeCompleto</td>
-                            <td>@agendamento.Procedimento</td>
-                            <td>@agendamento.DataHora</td>
-                            <td>@agendamento.StatusAgendamentoEnum</td>
-                            <td>@agendamento.Preco.ToString("C")</td>
+                            <th>Cliente</th>
+                            <th>Barbeiro</th>
+                            <th>Procedimento</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Preco</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var agendamento in Model.Agendamentos)
+                        {
+                            <tr>
+                                <td>@agendamento.Cliente.NomeCompleto</td>
+                                <td>@agendamento.Barbeiro.NomeCompleto</td>
+                                <td>@agendamento.Procedimento</td>
+                                <td>@agendamento.DataHora</td>
+                                <td>@agendamento.StatusAgendamentoEnum</td>
+                                <td>@agendamento.Preco.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="card border-0 shadow-sm mt-4">
-        <div class="card-header bg-white fw-semibold">Clientes cadastrados</div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nome</th>
-                        <th>Genero</th>
-                        <th>CPF</th>
-                        <th>Barbeiro</th>
-                        <th>Cadastro</th>
-                        <th>Ativo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cliente in Model.Clientes)
-                    {
+        <div class="card-header bg-white fw-semibold p-0">
+            <button class="dropcard-toggle btn w-100 d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#admin-clientes-dropcard"
+                    aria-expanded="false"
+                    aria-controls="admin-clientes-dropcard">
+                <span>Clientes cadastrados</span>
+                <i class="bi bi-chevron-down dropcard-icon" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div id="admin-clientes-dropcard" class="collapse">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@cliente.Id</td>
-                            <td>@cliente.NomeCompleto</td>
-                            <td>@cliente.GeneroEnum</td>
-                            <td>@cliente.CPF</td>
-                            <td>@cliente.BarbeiroQueCadastrou.NomeCompleto</td>
-                            <td>@cliente.DataCadastro.ToString("dd/MM/yyyy")</td>
-                            <td>@(cliente.Ativo ? "Sim" : "Nao")</td>
+                            <th>Id</th>
+                            <th>Nome</th>
+                            <th>Genero</th>
+                            <th>CPF</th>
+                            <th>Barbeiro</th>
+                            <th>Cadastro</th>
+                            <th>Ativo</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var cliente in Model.Clientes)
+                        {
+                            <tr>
+                                <td>@cliente.Id</td>
+                                <td>@cliente.NomeCompleto</td>
+                                <td>@cliente.GeneroEnum</td>
+                                <td>@cliente.CPF</td>
+                                <td>@cliente.BarbeiroQueCadastrou.NomeCompleto</td>
+                                <td>@cliente.DataCadastro.ToString("dd/MM/yyyy")</td>
+                                <td>@(cliente.Ativo ? "Sim" : "Nao")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
