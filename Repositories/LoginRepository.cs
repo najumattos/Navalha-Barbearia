@@ -7,7 +7,7 @@ namespace Navalha_Barbearia.Repositories
     public class LoginRepository : ILoginRepository
     {
         // Repositorio em memoria para simplificar o fluxo de autenticacao durante o desenvolvimento.
-        // Apenas Funcionario e Administrador tem acesso ao login; Clientes nao podem acessar o sistema.
+        // Credenciais de exemplo para os perfis autenticados do sistema.
         private static readonly List<LoginModel> _logins =
         [
             new LoginModel
@@ -27,12 +27,25 @@ namespace Navalha_Barbearia.Repositories
                 Email = "funcionario@navalha.com",
                 Senha = "123456",
                 TipoAcessoEnum = TipoAcessoEnum.Funcionario
+            },
+            new LoginModel
+            {
+                Id = 3,
+                IdBarbeiro = null,
+                IdCliente = 1,
+                Email = "123.456.789-00",
+                Senha = "123456",
+                TipoAcessoEnum = TipoAcessoEnum.Cliente
             }
         ];
 
-        public LoginModel? ObterPorEmailSenha(string email, string senha)
+        public LoginModel? ObterPorIdentificadorSenha(string identificador, string senha)
         {
-            return _logins.FirstOrDefault(x => x.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && x.Senha == senha);
+            var identificadorNormalizado = NormalizarIdentificador(identificador);
+
+            return _logins.FirstOrDefault(x => x.Senha == senha && (
+                x.Email.Equals(identificador, StringComparison.OrdinalIgnoreCase) ||
+                NormalizarIdentificador(x.Email) == identificadorNormalizado));
         }
 
         public LoginModel? ObterPorBarbeiroId(int idBarbeiro)
@@ -43,6 +56,11 @@ namespace Navalha_Barbearia.Repositories
         public LoginModel? ObterPorClienteId(int idCliente)
         {
             return _logins.FirstOrDefault(x => x.IdCliente == idCliente);
+        }
+
+        private static string NormalizarIdentificador(string valor)
+        {
+            return new string(valor.Where(char.IsDigit).ToArray());
         }
 
     }

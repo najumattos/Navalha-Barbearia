@@ -4,9 +4,8 @@ namespace Navalha_Barbearia.Models.ViewModels
 {
     public class LoginRequestViewModel
     {
-        [Required(ErrorMessage = "Informe o e-mail.")]
-        [EmailAddress(ErrorMessage = "Informe um e-mail valido.")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Informe e-mail ou CPF.")]
+        public string Identificador { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Informe a senha.")]
         public string Senha { get; set; } = string.Empty;

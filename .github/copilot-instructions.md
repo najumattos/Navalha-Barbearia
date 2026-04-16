@@ -22,6 +22,11 @@ applyTo: "**"
 - Se a mudanca afetar regras de desenvolvimento, documentacao ou padroes do projeto, refletir isso tambem nestas instrucoes.
 - Quando houver nova regra de negocio, registrar o impacto nos perfis de acesso e nas telas afetadas.
 
+## Regras de Acesso por Perfil
+
+- Perfil Cliente autenticado deve ter acesso apenas a tela de historico de agendamentos, em modo leitura.
+- Para perfil Cliente, evitar expor acoes de gerenciamento (cadastro, edicao, exclusao ou alteracao de status) nas telas.
+
 ## Frontend
 
 - Reutilizar padroes visuais ja existentes antes de criar novo layout.

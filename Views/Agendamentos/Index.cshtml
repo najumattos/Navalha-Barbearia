@@ -1,17 +1,50 @@
 @model Navalha_Barbearia.Models.ViewModels.AgendamentoCrudViewModel
 @using Navalha_Barbearia.Enums
+@using Navalha_Barbearia.Services.Interfaces
+@inject IUsuarioContextoService UsuarioContexto
 
 @{
     ViewData["Title"] = "Agendamentos";
+    var tipoAcesso = UsuarioContexto.ObterTipoAcesso();
+    var clienteSomenteHistorico = tipoAcesso == TipoAcessoEnum.Cliente;
+
+    string ObterTextoStatus(StatusAgendamentoEnum status) => status switch
+    {
+        StatusAgendamentoEnum.Cancelado => "Cancelado",
+        StatusAgendamentoEnum.Agendado => "Agendado",
+        StatusAgendamentoEnum.Concluido => "Concluido",
+        StatusAgendamentoEnum.Pendente => "Pendente",
+        StatusAgendamentoEnum.AguardandoConfirmacaoBarbeiro => "Aguardando confirmacao do barbeiro",
+        StatusAgendamentoEnum.AguardandoConfirmacaoCliente => "Aguardando confirmacao do cliente",
+        _ => "Status indefinido"
+    };
+
+    string ObterClasseStatus(StatusAgendamentoEnum status) => status switch
+    {
+        StatusAgendamentoEnum.Cancelado => "badge rounded-pill bg-danger",
+        StatusAgendamentoEnum.Agendado => "badge rounded-pill bg-primary",
+        StatusAgendamentoEnum.Concluido => "badge rounded-pill bg-success",
+        StatusAgendamentoEnum.Pendente => "badge rounded-pill bg-secondary",
+        StatusAgendamentoEnum.AguardandoConfirmacaoBarbeiro => "badge rounded-pill bg-warning text-dark",
+        StatusAgendamentoEnum.AguardandoConfirmacaoCliente => "badge rounded-pill bg-info text-dark",
+        _ => "badge rounded-pill bg-secondary"
+    };
 }
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <span class="eyebrow">Agenda</span>
-            <h1 class="h3 mt-2 mb-0">Agendamentos</h1>
+            <h1 class="h3 mt-2 mb-0">@(clienteSomenteHistorico ? "Meu historico" : "Agendamentos")</h1>
+            @if (clienteSomenteHistorico)
+            {
+                <p class="text-muted mb-0">Consulta somente leitura do seu historico e do status de cada agendamento.</p>
+            }
         </div>
-        <a class="btn btn-dark" asp-action="Create">Novo agendamento</a>
+        @if (!clienteSomenteHistorico)
+        {
+            <a class="btn btn-dark" asp-action="Create">Novo agendamento</a>
+        }
     </div>
 
     <div class="card-soft p-3 p-md-4">
@@ -39,24 +72,31 @@
                             <td>@agendamento.Procedimento</td>
                             <td>@agendamento.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>
-                                <div class="d-flex flex-column gap-2">
-                                    <form id="@formId" asp-action="AtualizarStatus" method="post" class="d-flex gap-2 align-items-center">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="idAgendamento" value="@agendamento.IdAgendamento" />
-                                        <select name="status" class="form-select form-select-sm">
-                                            @foreach (var status in Enum.GetValues<StatusAgendamentoEnum>())
-                                            {
-                                                <option value="@((int)status)" selected="@(agendamento.StatusAgendamentoEnum == status)">@status</option>
-                                            }
-                                        </select>
-                                        <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
-                                    </form>
-                                    <small class="text-muted">Atualizacao direta do status sem abrir a edicao completa.</small>
-                                </div>
+                                @if (clienteSomenteHistorico)
+                                {
+                                    <span class="@ObterClasseStatus(agendamento.StatusAgendamentoEnum)">@ObterTextoStatus(agendamento.StatusAgendamentoEnum)</span>
+                                }
+                                else
+                                {
+                                    <div class="d-flex flex-column gap-2">
+                                        <form id="@formId" asp-action="AtualizarStatus" method="post" class="d-flex gap-2 align-items-center">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="idAgendamento" value="@agendamento.IdAgendamento" />
+                                            <select name="status" class="form-select form-select-sm">
+                                                @foreach (var status in Enum.GetValues<StatusAgendamentoEnum>())
+                                                {
+                                                    <option value="@((int)status)" selected="@(agendamento.StatusAgendamentoEnum == status)">@status</option>
+                                                }
+                                            </select>
+                                            <button type="submit" class="btn btn-dark btn-sm">Salvar</button>
+                                        </form>
+                                        <small class="text-muted">Atualizacao direta do status sem abrir a edicao completa.</small>
+                                    </div>
+                                }
                             </td>
                             <td>@agendamento.Preco.ToString("C")</td>
                             <td class="text-end">
-                                <a class="btn btn-outline-dark btn-sm" asp-controller="Agendamentos" asp-action="ResumoAgendamento" asp-route-idAgendamento="@agendamento.IdAgendamento">Detalhes</a>
+                                <a class="btn btn-outline-dark btn-sm" asp-controller="Agendamentos" asp-action="ResumoAgendamento" asp-route-idAgendamento="@agendamento.IdAgendamento">@(clienteSomenteHistorico ? "Visualizar" : "Detalhes")</a>
                             </td>
                         </tr>
                     }

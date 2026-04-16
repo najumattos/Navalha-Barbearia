@@ -61,7 +61,11 @@ namespace Navalha_Barbearia.Controllers
                 }
 
                 var cliente = _clienteService.ObterPerfilCliente(idCliente.Value, TipoAcessoEnum.Cliente);
-                return View(ObterViewModel(new AgendamentoModel(), _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)));
+                var historico = _agendamentoService.ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)
+                    .OrderByDescending(x => x.DataHora)
+                    .ToList();
+
+                return View(ObterViewModelSomenteHistoricoCliente(historico));
             }
 
             return RedirectToAction("Login", "Auth");
@@ -69,12 +73,22 @@ namespace Navalha_Barbearia.Controllers
 
         public IActionResult Details(int id)
         {
+            if (!UsuarioEhClienteComAgendamentoVinculado(id))
+            {
+                return Forbid();
+            }
+
             return RedirectToAction(nameof(ResumoAgendamento), new { idAgendamento = id });
         }
 
         [HttpGet]
         public IActionResult ResumoAgendamento(int idAgendamento)
         {
+            if (!UsuarioEhClienteComAgendamentoVinculado(idAgendamento))
+            {
+                return Forbid();
+            }
+
             return RedirectToAction(nameof(HomeController.ResumoAgendamento), "Home", new { idAgendamento, origem = "agendamentos" });
         }
 
@@ -231,17 +245,6 @@ namespace Navalha_Barbearia.Controllers
 
                     _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Funcionario, idBarbeiro.Value);
                 }
-                else if (tipoAcesso.Value == TipoAcessoEnum.Cliente)
-                {
-                    var idCliente = _usuarioContextoService.ObterIdCliente();
-                    if (!idCliente.HasValue)
-                    {
-                        return RedirectToAction("Login", "Auth");
-                    }
-
-                    var cliente = _clienteService.ObterPerfilCliente(idCliente.Value, TipoAcessoEnum.Cliente);
-                    _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Cliente, cpfClienteSolicitante: cliente.CPF);
-                }
                 else if (tipoAcesso.Value == TipoAcessoEnum.Administrador)
                 {
                     _agendamentoService.AtualizarStatus(idAgendamento, status, TipoAcessoEnum.Administrador);
@@ -292,6 +295,19 @@ namespace Navalha_Barbearia.Controllers
                 Clientes = clientes,
                 Procedimentos = procedimentos,
                 PrecosPorBarbeiroProcedimento = barbeiros.ToDictionary(x => x.Id, MontarMapaPrecosPorProcedimento)
+            };
+        }
+
+        private AgendamentoCrudViewModel ObterViewModelSomenteHistoricoCliente(List<AgendamentoModel> historico)
+        {
+            return new AgendamentoCrudViewModel
+            {
+                Agendamento = new AgendamentoModel(),
+                Agendamentos = historico,
+                Barbeiros = [],
+                Clientes = [],
+                Procedimentos = [],
+                PrecosPorBarbeiroProcedimento = new Dictionary<int, Dictionary<int, decimal>>()
             };
         }
 
@@ -409,6 +425,28 @@ namespace Navalha_Barbearia.Controllers
                 .Select(x => x.First())
                 .OrderBy(x => x.Nome)
                 .ToList();
+        }
+
+        private bool UsuarioEhClienteComAgendamentoVinculado(int idAgendamento)
+        {
+            var tipoAcesso = _usuarioContextoService.ObterTipoAcesso();
+            if (tipoAcesso != TipoAcessoEnum.Cliente)
+            {
+                return true;
+            }
+
+            var idCliente = _usuarioContextoService.ObterIdCliente();
+            if (!idCliente.HasValue)
+            {
+                return false;
+            }
+
+            var cliente = _clienteService.ObterPerfilCliente(idCliente.Value, TipoAcessoEnum.Cliente);
+            var agendamentoPertenceAoCliente = _agendamentoService
+                .ObterPorCpfCliente(cliente.CPF, TipoAcessoEnum.Cliente)
+                .Any(x => x.IdAgendamento == idAgendamento);
+
+            return agendamentoPertenceAoCliente;
         }
     }
 }
