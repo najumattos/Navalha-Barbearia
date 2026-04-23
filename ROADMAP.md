@@ -896,19 +896,27 @@ public class AgendamentoService : IAgendamentoService
 }
 ```
 
-#### Passo 4: Logs em Controllers
+#### Passo 4: Logs em Controllers MVC
 ```csharp
 [HttpPost]
-public IActionResult CriarAgendamento([FromBody] AgendamentoCriacaoDto dto)
+[ValidateAntiForgeryToken]
+public IActionResult Create(AgendamentoCrudViewModel viewModel)
 {
-    _logger.LogInformation("Request POST Agendamento de {Ip}", 
+    _logger.LogInformation("POST Create agendamento de {Ip}",
         HttpContext.Connection.RemoteIpAddress);
-    
-    var resultado = _service.Criar(dto);
-    
-    _logger.LogInformation("Agendamento processado: {Resultado}", resultado);
-    
-    return resultado ? Ok() : BadRequest();
+
+    if (!ModelState.IsValid)
+    {
+        _logger.LogWarning("Create agendamento invalido para o cliente {ClienteId}",
+            viewModel.Agendamento.Cliente?.Id);
+        return View(viewModel);
+    }
+
+    _service.Criar(viewModel.Agendamento);
+    _logger.LogInformation("Agendamento criado com sucesso para o cliente {ClienteId}",
+        viewModel.Agendamento.Cliente?.Id);
+
+    return RedirectToAction(nameof(Index));
 }
 ```
 
@@ -929,13 +937,13 @@ public IActionResult CriarAgendamento([FromBody] AgendamentoCriacaoDto dto)
 | Fase | Tarefa | Impacto | Esforço |
 |---|---|---|---|
 | **1** | Banco de Dados (PostgreSQL + EF Core) | ⭐⭐⭐⭐⭐ | 🟠 Médio |
-| **1** | Autenticação Real (Identity) | ⭐⭐⭐⭐⭐ | 🟠 Médio |
-| **2** | Unit Tests (xUnit) | ⭐⭐⭐⭐ | 🟡 Baixo-Médio |
-| **2** | Logging (Serilog) | ⭐⭐⭐ | 🟡 Baixo |
-| **3** | Integration Tests | ⭐⭐ | 🟠 Médio |
+| **1** | Autenticação Real (Identity + cookie/sessão) | ⭐⭐⭐⭐⭐ | 🟠 Médio |
+| **2** | Unit Tests (xUnit para Services) | ⭐⭐⭐⭐ | 🟡 Baixo-Médio |
+| **2** | Security Headers e hardening MVC | ⭐⭐⭐ | 🟡 Baixo |
+| **3** | Logging (Serilog) | ⭐⭐⭐ | 🟡 Baixo |
+| **3** | Integration Tests (fluxos MVC) | ⭐⭐ | 🟠 Médio |
 | **4** | Docker / docker-compose | ⭐⭐ | 🟡 Baixo |
 | **5** | CI/CD (GitHub Actions) | ⭐⭐ | 🟡 Baixo |
-| **5** | Security Headers | ⭐ | 🟡 Baixo |
 
 ---
 
@@ -949,9 +957,12 @@ public IActionResult CriarAgendamento([FromBody] AgendamentoCriacaoDto dto)
 
 ---
 
-**Próximas ações**: 
-1. Comece com **Banco de Dados** (Fase 1)
-2. Depois **Autenticação Real** (Fase 1)
-3. Implemente **Testes** (Fase 2)
+**Próximas ações**:
+1. Migrar persistência para banco relacional com EF Core e migrations.
+2. Substituir autenticação em memória por Identity com sessão/cookie.
+3. Criar testes unitários dos Services críticos e regras de negócio.
+4. Aplicar hardening de segurança MVC (headers, erros e validações).
+
+**Diretriz do projeto**: manter arquitetura MVC server-side, sem criação de controllers de integração dedicados.
 
 Boa sorte! 🚀
