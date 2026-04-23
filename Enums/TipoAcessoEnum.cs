@@ -1,9 +1,8 @@
-namespace Navalha_Barbearia.Enums
+namespace Navalha_Barbearia.Enums;
+
+public enum TipoAcessoEnum
 {
-    public enum TipoAcessoEnum
-    {
-        Administrador = 1,
-        Funcionario = 2,
-        Cliente = 4
-    }
+    Administrador = 1,
+    Funcionario = 2,
+    Cliente = 4
 }

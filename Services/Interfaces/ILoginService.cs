@@ -1,11 +1,10 @@
 using Navalha_Barbearia.Models;
 
-namespace Navalha_Barbearia.Services.Interfaces
+namespace Navalha_Barbearia.Services.Interfaces;
+
+public interface ILoginService
 {
-    public interface ILoginService
-    {
-        LoginModel? Autenticar(string identificador, string senha);
-        LoginModel? ObterPorBarbeiroId(int idBarbeiro);
-        LoginModel? ObterPorClienteId(int idCliente);
-    }
+    LoginModel? Autenticar(string identificador, string senha);
+    LoginModel? ObterPorBarbeiroId(int idBarbeiro);
+    LoginModel? ObterPorClienteId(int idCliente);
 }

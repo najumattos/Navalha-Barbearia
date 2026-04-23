@@ -6,7 +6,7 @@ Aplicação prática dos pontos do roadmap backend/full-stack no contexto do pro
 
 ## 📋 Índice
 1. [Internet & Infrastructure](#internet--infrastructure)
-2. [Backend & API Design](#backend--api-design)
+2. [Backend Design (MVC)](#backend-design-mvc)
 3. [Databases](#databases)
 4. [Authentication](#authentication)
 5. [Web Security](#web-security)
@@ -46,108 +46,33 @@ Aplicação prática dos pontos do roadmap backend/full-stack no contexto do pro
 
 ---
 
-## Backend & API Design
+## Backend Design (MVC)
 
-### REST APIs
-**Status**: ⚠️ Parcialmente implementado
+### Arquitetura MVC
+**Status**: ✅ Estrutura base implementada
+
+**Objetivo**: manter o projeto orientado a MVC, sem endpoints externos e sem controllers dedicados de integração.
 
 **Checklist de Implementação**:
+- [x] Controllers MVC organizados por domínio
+- [x] Services concentrando regras de negócio
+- [x] Repositories abstraindo acesso a dados
+- [ ] Padronizar ViewModels por caso de uso (listagem, criação, edição, detalhes)
+- [ ] Revisar validações de entrada com DataAnnotations e ModelState
+- [ ] Padronizar mensagens de erro e feedback ao usuário nas Views
 
-#### Passo 1: Adicionar Controllers de API (Separado de MVC)
-```
-Controllers/
-├── Api/
-│   ├── AgendamentosApiController.cs
-│   ├── ProcedimentosApiController.cs
-│   ├── BarbeirosApiController.cs
-│   └── ClientesApiController.cs
-└── [MVC Controllers existentes]
-```
+### Documentação de Controllers MVC
+**Status**: ⚠️ Parcial
 
-- [ ] Criar pasta `Controllers/Api/`
-- [ ] Criar `AgendamentosApiController.cs` com `[ApiController]` e `[Route("api/[controller]")]`
-- [ ] Retornar `IActionResult` com `Ok()`, `NotFound()`, `BadRequest()`
-- [ ] HTTP Status codes corretos:
-  - `200 OK` - sucesso
-  - `201 Created` - recurso criado
-  - `204 No Content` - sucesso sem conteúdo
-  - `400 Bad Request` - validação falhou
-  - `401 Unauthorized` - sem autenticação
-  - `403 Forbidden` - sem autorização
-  - `404 Not Found` - recurso não existe
-  - `500 Internal Server Error` - erro servidor
-
-#### Passo 2: Request/Response DTOs
-- [ ] Criar pasta `Models/Dtos/`
-- [ ] Criar DTOs para cada entidade (não expor modelos internos)
-  - `AgendamentoCreateDto`, `AgendamentoReadDto`
-  - `ClienteCreateDto`, `ClienteReadDto`
-  - etc.
-- [ ] Usar AutoMapper para mapear Model ↔ DTO
-
-#### Passo 3: Content Negotiation
-- [ ] Configurar `AddControllers().AddJsonOptions()`
-- [ ] Suportar JSON (padrão) e XML (opcional)
+**Passos**:
+- [ ] Documentar actions críticas com XML comments
+- [ ] Descrever regras de autorização por perfil em comentários curtos
+- [ ] Atualizar README com fluxos MVC principais (Login, Agendamento, Gestão)
 
 **Checklist**:
-- [ ] GET `/api/agendamentos` - lista com filtros
-- [ ] GET `/api/agendamentos/{id}` - detalhe
-- [ ] POST `/api/agendamentos` - criar
-- [ ] PUT `/api/agendamentos/{id}` - atualizar
-- [ ] DELETE `/api/agendamentos/{id}` - deletar
-- [ ] Erro responses padronizados (ProblemDetails)
-
----
-
-### API Documentation (Swagger/OpenAPI)
-**Status**: ❌ Não implementado
-
-**Passo a Passo**:
-
-#### Passo 1: Instalar Swagger
-```bash
-dotnet add package Swashbuckle.AspNetCore
-```
-
-#### Passo 2: Configurar em `Program.cs`
-```csharp
-// Adicionar antes de var app = builder.Build()
-var swaggerDef = builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "Navalha Barbearia API", 
-        Version = "v1.0",
-        Description = "API para gestão de barbearia"
-    });
-});
-
-// Adicionar no pipeline (antes de MapControllerRoute)
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Navalha API v1"));
-}
-```
-
-#### Passo 3: Documentar Controllers com XML Comments
-```csharp
-/// <summary>
-/// Obtém todos os agendamentos
-/// </summary>
-/// <returns>Lista de agendamentos</returns>
-/// <response code="200">Agendamentos retornados</response>
-[HttpGet]
-public IActionResult GetAll() { ... }
-```
-
-**Checklist**:
-- [ ] Swagger instalado e configurado
-- [ ] Acessível em `https://localhost:5001/swagger/ui`
-- [ ] Todos os Controllers documentados com `/// <summary>`
-- [ ] Todos os parâmetros descrito com `/// <param>`
-- [ ] Todos os returns descrito com `/// <returns>`
-- [ ] Response codes documentados com `/// <response code="..."`
+- [ ] Controllers críticos com `/// <summary>`
+- [ ] Fluxos principais mapeados na documentação
+- [ ] Regras de acesso por perfil registradas
 
 ---
 
@@ -257,7 +182,7 @@ public class AgendamentoRepository : IAgendamentoRepository
 
 **Passo a Passo** (após banco de dados acima):
 
-#### Passo 1: Relacionamentos (Fluent API)
+#### Passo 1: Relacionamentos (Fluent Mapping)
 Configure relacionamentos em `NavalhaDbContext.OnModelCreating()`:
 ```csharp
 modelBuilder.Entity<AgendamentoModel>()
@@ -418,121 +343,6 @@ public class AgendamentosController : Controller { }
 
 ---
 
-### JWT (JSON Web Tokens)
-**Status**: ❌ Não implementado (para APIs)
-
-**Quando**: Após implementar Identity + REST APIs
-
-#### Passo 1: Instalar JWT
-```bash
-dotnet add package System.IdentityModel.Tokens.Jwt
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
-```
-
-#### Passo 2: Configurar JWT em `appsettings.json`
-```json
-{
-  "JwtSettings": {
-    "Secret": "sua-chave-secreta-muito-longa-min-32-caracteres",
-    "Issuer": "navalha-barbearia",
-    "Audience": "navalha-api",
-    "ExpirationMinutes": 60
-  }
-}
-```
-
-#### Passo 3: Criar Token Service
-```csharp
-public interface ITokenService
-{
-    string GenerateAccessToken(UsuarioIdentity usuario);
-}
-
-public class TokenService : ITokenService
-{
-    private readonly IConfiguration _config;
-    
-    public string GenerateAccessToken(UsuarioIdentity usuario)
-    {
-        var secret = _config["JwtSettings:Secret"];
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-            new Claim(ClaimTypes.Name, usuario.Nome),
-            new Claim(ClaimTypes.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, usuario.TipoAcesso.ToString())
-        };
-        
-        var token = new JwtSecurityToken(
-            issuer: _config["JwtSettings:Issuer"],
-            audience: _config["JwtSettings:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(
-                int.Parse(_config["JwtSettings:ExpirationMinutes"])),
-            signingCredentials: credentials);
-        
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-}
-```
-
-#### Passo 4: Registrar JWT em `Program.cs`
-```csharp
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
-    };
-});
-
-builder.Services.AddScoped<ITokenService, TokenService>();
-```
-
-#### Passo 5: Criar Endpoint de Login na API
-```csharp
-[HttpPost("login")]
-[AllowAnonymous]
-public async Task<IActionResult> Login([FromBody] LoginRequest request)
-{
-    var usuario = await _userManager.FindByNameAsync(request.CPF);
-    if (usuario == null || !await _userManager.CheckPasswordAsync(usuario, request.Senha))
-        return Unauthorized("CPF ou senha inválidos");
-    
-    var token = _tokenService.GenerateAccessToken(usuario);
-    return Ok(new { token });
-}
-```
-
-**Checklist**:
-- [ ] JWT packages instalados
-- [ ] `JwtSettings` em `appsettings.json`
-- [ ] `ITokenService` implementado
-- [ ] JWT registrado em `Program.cs`
-- [ ] Endpoint `POST /api/auth/login` retorna token
-- [ ] `[Authorize]` funciona com JWT em APIs
-- [ ] Token expira corretamente após `ExpirationMinutes`
-- [ ] Testes: Cliente consegue fazer requisição com `Authorization: Bearer {token}`
-- [ ] Testes: Requisição sem token retorna 401
-- [ ] Testes: Token expirado retorna 401
-
----
-
 ## Web Security
 
 ### HTTPS & SSL/TLS
@@ -546,33 +356,6 @@ public async Task<IActionResult> Login([FromBody] LoginRequest request)
 - [x] HTTPS obrigatório (`https://localhost:5001`)
 - [x] HTTP redireciona para HTTPS
 - [x] Header `Strict-Transport-Security` presente
-
----
-
-### CORS (Cross-Origin Resource Sharing)
-**Status**: ⚠️ Pode precisar configurar para APIs
-
-#### Passo 1: Se houver frontend externo, configurar CORS
-```csharp
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("https://localhost:3000", "https://seu-dominio.com")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
-
-// No pipeline
-app.UseCors("AllowFrontend");
-```
-
-**Checklist**:
-- [ ] CORS configurado apenas para origins confiáveis
-- [ ] Credentials habilitados apenas se necessário
-- [ ] Preflight (OPTIONS) funciona corretamente
 
 ---
 
@@ -616,7 +399,7 @@ app.UseCors("AllowFrontend");
 **Checklist**:
 - [ ] HTTPS em produção
 - [ ] CPF não exposto em logs/responses
-- [ ] Senhas nunca retornadas na API
+- [ ] Senhas nunca retornadas em logs, views ou respostas
 
 #### 4. XML External Entities (XXE)
 - [x] Não usa XML parsing de usuários
@@ -659,8 +442,7 @@ app.UseCors("AllowFrontend");
 
 **Checklist**:
 - [ ] `dotnet list package --outdated` regularmente
-- [ ] System.IdentityModel.Tokens.Jwt atualizado
-- [ ] Swashbuckle atualizado
+- [ ] Dependências críticas atualizadas regularmente
 
 #### 10. Insufficient Logging & Monitoring
 - [ ] Implementar Serilog (veja Testing & Logging)
@@ -834,7 +616,7 @@ public class AgendamentosControllerIntegrationTests
     public async Task GetAll_DeveRetornarOk()
     {
         // Act
-        var response = await _client.GetAsync("/api/agendamentos");
+        var response = await _client.GetAsync("/Agendamentos");
         
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -847,7 +629,7 @@ public class AgendamentosControllerIntegrationTests
 - [ ] Testes de endpoints GET/POST/PUT/DELETE
 - [ ] Validação de HTTP status codes
 - [ ] Testes com dados em banco (EF Core InMemory)
-- [ ] Testes autenticação (JWT token)
+- [ ] Testes de autenticação via cookie/sessão
 
 ---
 
@@ -1150,13 +932,10 @@ public IActionResult CriarAgendamento([FromBody] AgendamentoCriacaoDto dto)
 | **1** | Autenticação Real (Identity) | ⭐⭐⭐⭐⭐ | 🟠 Médio |
 | **2** | Unit Tests (xUnit) | ⭐⭐⭐⭐ | 🟡 Baixo-Médio |
 | **2** | Logging (Serilog) | ⭐⭐⭐ | 🟡 Baixo |
-| **2** | REST APIs (Controllers de API) | ⭐⭐⭐ | 🟡 Baixo |
-| **3** | Swagger (Documentação) | ⭐⭐⭐ | 🟡 Baixo |
 | **3** | Integration Tests | ⭐⭐ | 🟠 Médio |
-| **4** | JWT (para APIs) | ⭐⭐ | 🟠 Médio |
 | **4** | Docker / docker-compose | ⭐⭐ | 🟡 Baixo |
 | **5** | CI/CD (GitHub Actions) | ⭐⭐ | 🟡 Baixo |
-| **5** | API Security Headers | ⭐ | 🟡 Baixo |
+| **5** | Security Headers | ⭐ | 🟡 Baixo |
 
 ---
 

@@ -2,31 +2,23 @@ using Navalha_Barbearia.Models;
 using Navalha_Barbearia.Repositories.Interfaces;
 using Navalha_Barbearia.Services.Interfaces;
 
-namespace Navalha_Barbearia.Services
+namespace Navalha_Barbearia.Services;
+
+public class LoginService(ILoginRepository loginRepository) : ILoginService
 {
-    public class LoginService : ILoginService
+    public LoginModel? Autenticar(string identificador, string senha)
     {
-        private readonly ILoginRepository _loginRepository;
+        // SRP: a validacao de credenciais fica centralizada no service de login.
+        return loginRepository.ObterPorIdentificadorSenha(identificador, senha);
+    }
 
-        public LoginService(ILoginRepository loginRepository)
-        {
-            _loginRepository = loginRepository;
-        }
+    public LoginModel? ObterPorBarbeiroId(int idBarbeiro)
+    {
+        return loginRepository.ObterPorBarbeiroId(idBarbeiro);
+    }
 
-        public LoginModel? Autenticar(string identificador, string senha)
-        {
-            // SRP: a validacao de credenciais fica centralizada no service de login.
-            return _loginRepository.ObterPorIdentificadorSenha(identificador, senha);
-        }
-
-        public LoginModel? ObterPorBarbeiroId(int idBarbeiro)
-        {
-            return _loginRepository.ObterPorBarbeiroId(idBarbeiro);
-        }
-
-        public LoginModel? ObterPorClienteId(int idCliente)
-        {
-            return _loginRepository.ObterPorClienteId(idCliente);
-        }
+    public LoginModel? ObterPorClienteId(int idCliente)
+    {
+        return loginRepository.ObterPorClienteId(idCliente);
     }
 }

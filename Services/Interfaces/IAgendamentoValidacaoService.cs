@@ -1,9 +1,8 @@
 using Navalha_Barbearia.Models;
 
-namespace Navalha_Barbearia.Services.Interfaces
+namespace Navalha_Barbearia.Services.Interfaces;
+
+public interface IAgendamentoValidacaoService
 {
-    public interface IAgendamentoValidacaoService
-    {
-        SlotHorarioModel ValidarCriacaoComSlotLivre(AgendamentoModel agendamento);
-    }
+    SlotHorarioModel ValidarCriacaoComSlotLivre(AgendamentoModel agendamento);
 }

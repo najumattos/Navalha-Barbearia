@@ -3,131 +3,121 @@ using Navalha_Barbearia.Models;
 using Navalha_Barbearia.Models.ViewModels;
 using Navalha_Barbearia.Services.Interfaces;
 
-namespace Navalha_Barbearia.Controllers
+namespace Navalha_Barbearia.Controllers;
+
+public class BarbeirosController(IBarbeiroService barbeiroService, IProcedimentoService procedimentoService) : Controller
 {
-    public class BarbeirosController : Controller
+    public IActionResult Index()
     {
-        private readonly IBarbeiroService _barbeiroService;
-        private readonly IProcedimentoService _procedimentoService;
+        // A index exibe o inventario completo do dominio desta entidade.
+        return View(barbeiroService.ObterTodos());
+    }
 
-        public BarbeirosController(IBarbeiroService barbeiroService, IProcedimentoService procedimentoService)
+    public IActionResult Details(int id)
+    {
+        var barbeiro = barbeiroService.ObterPorId(id);
+        if (barbeiro is null)
         {
-            _barbeiroService = barbeiroService;
-            _procedimentoService = procedimentoService;
+            return NotFound();
         }
 
-        public IActionResult Index()
-        {
-            // A index exibe o inventario completo do dominio desta entidade.
-            return View(_barbeiroService.ObterTodos());
-        }
+        ViewBag.ProcedimentosDoBarbeiro = MontarProcedimentosDoBarbeiro(barbeiro);
+        return View(barbeiro);
+    }
 
-        public IActionResult Details(int id)
-        {
-            var barbeiro = _barbeiroService.ObterPorId(id);
-            if (barbeiro is null)
-            {
-                return NotFound();
-            }
+    public IActionResult Create()
+    {
+        return View(new BarbeiroModel());
+    }
 
-            ViewBag.ProcedimentosDoBarbeiro = MontarProcedimentosDoBarbeiro(barbeiro);
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(BarbeiroModel barbeiro)
+    {
+        if (!ModelState.IsValid)
+        {
             return View(barbeiro);
         }
 
-        public IActionResult Create()
+        barbeiroService.Criar(barbeiro);
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Edit(int id)
+    {
+        var barbeiro = barbeiroService.ObterPorId(id);
+        return barbeiro is null ? NotFound() : View(barbeiro);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Edit(BarbeiroModel barbeiro)
+    {
+        if (!ModelState.IsValid)
         {
-            return View(new BarbeiroModel());
+            return View(barbeiro);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(BarbeiroModel barbeiro)
+        barbeiroService.Atualizar(barbeiro);
+        return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Delete(int id)
+    {
+        var barbeiro = barbeiroService.ObterPorId(id);
+        return barbeiro is null ? NotFound() : View(barbeiro);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        barbeiroService.Excluir(id);
+        return RedirectToAction(nameof(Index));
+    }
+
+    private List<ProcedimentoDoBarbeiroViewModel> MontarProcedimentosDoBarbeiro(BarbeiroModel barbeiro)
+    {
+        var catalogo = procedimentoService.ObterTodos().ToDictionary(x => x.Id, x => x);
+        var procedimentos = new List<ProcedimentoDoBarbeiroViewModel>();
+
+        foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
         {
-            if (!ModelState.IsValid)
+            catalogo.TryGetValue(relacao.ProcedimentoId, out var procedimentoCatalogo);
+            var procedimentoLegado = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == relacao.ProcedimentoId);
+
+            if (procedimentoCatalogo is null && procedimentoLegado is null)
             {
-                return View(barbeiro);
+                continue;
             }
 
-            _barbeiroService.Criar(barbeiro);
-            return RedirectToAction(nameof(Index));
-        }
-
-        public IActionResult Edit(int id)
-        {
-            var barbeiro = _barbeiroService.ObterPorId(id);
-            return barbeiro is null ? NotFound() : View(barbeiro);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(BarbeiroModel barbeiro)
-        {
-            if (!ModelState.IsValid)
+            procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
             {
-                return View(barbeiro);
+                Id = relacao.ProcedimentoId,
+                Nome = procedimentoCatalogo?.Nome ?? procedimentoLegado?.Nome ?? string.Empty,
+                Descricao = procedimentoCatalogo?.Descricao ?? procedimentoLegado?.Descricao ?? string.Empty,
+                PrecoBase = procedimentoCatalogo?.PrecoBase ?? procedimentoLegado?.PrecoBase ?? 0m,
+                PrecoPorBarbeiro = relacao.PrecoPorBarbeiro
+            });
+        }
+
+        foreach (var procedimentoLegado in barbeiro.Procedimentos)
+        {
+            if (procedimentos.Any(x => x.Id == procedimentoLegado.Id))
+            {
+                continue;
             }
 
-            _barbeiroService.Atualizar(barbeiro);
-            return RedirectToAction(nameof(Index));
-        }
-
-        public IActionResult Delete(int id)
-        {
-            var barbeiro = _barbeiroService.ObterPorId(id);
-            return barbeiro is null ? NotFound() : View(barbeiro);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
-        {
-            _barbeiroService.Excluir(id);
-            return RedirectToAction(nameof(Index));
-        }
-
-        private List<ProcedimentoDoBarbeiroViewModel> MontarProcedimentosDoBarbeiro(BarbeiroModel barbeiro)
-        {
-            var catalogo = _procedimentoService.ObterTodos().ToDictionary(x => x.Id, x => x);
-            var procedimentos = new List<ProcedimentoDoBarbeiroViewModel>();
-
-            foreach (var relacao in barbeiro.RelacoesProcedimentos.Where(x => x.Ativo))
+            procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
             {
-                catalogo.TryGetValue(relacao.ProcedimentoId, out var procedimentoCatalogo);
-                var procedimentoLegado = barbeiro.Procedimentos.FirstOrDefault(x => x.Id == relacao.ProcedimentoId);
-
-                if (procedimentoCatalogo is null && procedimentoLegado is null)
-                {
-                    continue;
-                }
-
-                procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
-                {
-                    Id = relacao.ProcedimentoId,
-                    Nome = procedimentoCatalogo?.Nome ?? procedimentoLegado?.Nome ?? string.Empty,
-                    Descricao = procedimentoCatalogo?.Descricao ?? procedimentoLegado?.Descricao ?? string.Empty,
-                    PrecoBase = procedimentoCatalogo?.PrecoBase ?? procedimentoLegado?.PrecoBase ?? 0m,
-                    PrecoPorBarbeiro = relacao.PrecoPorBarbeiro
-                });
-            }
-
-            foreach (var procedimentoLegado in barbeiro.Procedimentos)
-            {
-                if (procedimentos.Any(x => x.Id == procedimentoLegado.Id))
-                {
-                    continue;
-                }
-
-                procedimentos.Add(new ProcedimentoDoBarbeiroViewModel
-                {
-                    Id = procedimentoLegado.Id,
-                    Nome = procedimentoLegado.Nome,
-                    Descricao = procedimentoLegado.Descricao,
-                    PrecoBase = procedimentoLegado.PrecoBase,
-                    PrecoPorBarbeiro = procedimentoLegado.PrecoPorBarbeiro
-                });
-            }
-
-            return procedimentos.OrderBy(x => x.Nome).ToList();
+                Id = procedimentoLegado.Id,
+                Nome = procedimentoLegado.Nome,
+                Descricao = procedimentoLegado.Descricao,
+                PrecoBase = procedimentoLegado.PrecoBase,
+                PrecoPorBarbeiro = procedimentoLegado.PrecoPorBarbeiro
+            });
         }
+
+        return procedimentos.OrderBy(x => x.Nome).ToList();
     }
 }

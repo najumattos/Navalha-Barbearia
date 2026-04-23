@@ -1,9 +1,8 @@
-namespace Navalha_Barbearia.Models
-{
-    public class ErrorViewModel
-    {
-        public string? RequestId { get; set; }
+namespace Navalha_Barbearia.Models;
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    }
+public class ErrorViewModel
+{
+    public string? RequestId { get; set; }
+
+    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }
